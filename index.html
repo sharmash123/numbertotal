@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Number-Cal: Charts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Keep your external stylesheet unchanged -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Local overrides for the index page (keeps your style.css intact) */
+        .initial-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 640px;
+            margin: 2.5rem auto;
+            padding: 2rem;
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+        }
+        .table-container { overflow-x: auto; margin: 0 auto; max-width: 100%; }
+        table { border-collapse: collapse; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.06); min-width: 400px; }
+
+        /* BIGGER GRID CELLS */
+        td {
+            border: 2px solid #000;
+            width: 160px;   /* increased cell width */
+            height: 160px;  /* increased cell height */
+            text-align: center;
+            font-size: 34px;
+            cursor: pointer;
+            background-color: #ffffff;
+            position: relative;
+            vertical-align: middle;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        input.cell-input {
+            width: 100%;
+            height: 100%;
+            font-size: 48px;
+            text-align: center;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-weight: 800;
+        }
+
+        .red { color: red; font-weight: bold; }
+
+        /* Main number made extra-visible */
+        .number-value {
+            font-size: 56px; /* bigger main number */
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+            margin-top: 6px;
+        }
+
+        /* Open / Close conditions bigger and bold */
+        .conditions {
+            display: block;
+            font-size: 1.05rem; /* bigger */
+            font-weight: 800;
+            margin-top: 8px;
+            line-height: 1.1;
+            color: #333;
+        }
+
+        /* Corners for Total and Diff */
+        .corner {
+            position: absolute;
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #444;
+            background: rgba(255,255,255,0.95);
+            padding: 4px 8px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+        .corner.left { top: 8px; left: 8px; color: #16a34a; background: rgba(16,163,74,0.06); } /* green total */
+        .corner.right { top: 8px; right: 8px; color: #dc2626; background: rgba(220,38,38,0.06); } /* red diff */
+
+        .hidden { display: none; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            td { width: 120px; height: 120px; }
+            input.cell-input { font-size: 36px; }
+            .number-value { font-size: 44px; }
+            .conditions, .corner { font-size: 0.95rem; }
+        }
+        @media (max-width: 600px) {
+            td { width: 100px; height: 100px; }
+            input.cell-input { font-size: 28px; }
+            .number-value { font-size: 36px; }
+            .conditions, .corner { font-size: 0.85rem; }
+            .table-container { padding: 0 8px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-poppins">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap">
+        <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number-Cal: Charts</h1>
+        <nav class="flex gap-4">
+            <!-- Keep links to your other pages unchanged -->
+            <a href="home.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">Home</a>
+            <a href="info.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">View Tables</a>
+            <a href="store.html" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors duration-300">View Store</a>
+        </nav>
+    </header>
+
+    <!-- Initial setup panel -->
+    <div id="initial-setup" class="initial-form animate-fadeIn">
+        <h2 class="text-2xl font-semibold text-center mb-2">Create a New Chart</h2>
+        <input type="text" id="chart-name-input" placeholder="Enter Chart Name" class="p-2 border border-gray-300 rounded-md shadow-sm">
+        <input type="number" id="rowsInput" placeholder="Rows (e.g., 1000)" min="1" value="1000" class="p-2 border border-gray-300 rounded-md shadow-sm">
+        <input type="number" id="colsInput" placeholder="Columns (e.g., 7)" min="1" max="10" value="7" class="p-2 border border-gray-300 rounded-md shadow-sm">
+        <button id="create-chart-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors duration-300 flex items-center justify-center gap-2">Create Chart</button>
+    </div>
+
+    <!-- Main chart area -->
+    <div id="chart-main" class="container mx-auto p-4 md:p-8 hidden">
+        <h2 class="text-2xl font-semibold mb-4 text-center"></h2>
+
+        <div class="input-box flex flex-wrap justify-center items-center gap-4 mb-8">
+            <button id="save-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors duration-300">Save Chart</button>
+            <button onclick="clearGrid()" class="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">Clear Grid</button>
+            <button onclick="newChart()" class="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 transition-colors duration-300">Create New Chart</button>
+        </div>
+
+        <div class="quick-entry flex flex-wrap justify-center items-center gap-4 mb-4">
+            <input type="text" id="quick-input" placeholder="Enter values like 08 85 06 88 **" class="p-2 border border-gray-300 rounded-md shadow-sm flex-grow max-w-md">
+            <button id="fill-grid-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors duration-300">Fill Grid</button>
+        </div>
+
+        <div class="modify-size flex flex-wrap justify-center items-center gap-4 mb-4">
+            <input type="number" id="rowsModify" placeholder="Modify Rows" min="1" value="1000" class="p-2 border border-gray-300 rounded-md shadow-sm">
+            <input type="number" id="colsModify" placeholder="Modify Columns" min="1" max="10" value="7" class="p-2 border border-gray-300 rounded-md shadow-sm">
+            <button id="resize-btn" class="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 transition-colors duration-300">Resize Chart</button>
+        </div>
+
+        <div class="table-container">
+            <table id="grid">
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Red-pair mapping (kept same)
+        const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4};
+
+        // Default grid size (changed to 1000)
+        let ROWS = 1000;
+        let COLS = 7;
+
+        // DOM refs
+        const tbody = document.querySelector("#grid tbody");
+        const chartNameHeader = document.querySelector("#chart-main h2");
+        const createBtn = document.getElementById('create-chart-btn');
+        const saveBtn = document.getElementById('save-btn');
+
+        // Data storage for cells
+        let gridData = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+        let currentChartName = null;
+
+        // Existing open/close logic preserved
+        function calculateCN(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0], 10), b = parseInt(num[1], 10);
+            const sum1 = a + b;
+            const sum2 = a + a;
+            return (sum1 + sum2) % 10;
+        }
+
+        function calculateCloseCond(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0], 10), b = parseInt(num[1], 10);
+            return ((a + b) % 10 + (b + b) % 10) % 10;
+        }
+
+        function isRed(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return false;
+            const a = parseInt(num[0], 10), b = parseInt(num[1], 10);
+            return a === b || redPairs[a] === b;
+        }
+
+        // NEW: digit total and diff total (as you described)
+        function digitTotal(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0], 10), b = parseInt(num[1], 10);
+            const tot = a + b;
+            return tot % 10; // shows single-digit like your examples
+        }
+
+        function digitDiffTotal(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0], 10), b = parseInt(num[1], 10);
+            const raw = (10 - b) + a; // your described rule: 10 - second + first
+            return raw % 10;
+        }
+
+        // Render a single cell's visual content (top-left total, top-right diff, center number, bottom open-close)
+        function renderCellContent(td, r, c) {
+            const cell = gridData[r] && gridData[r][c];
+            td.innerHTML = '';
+            if (!cell) return;
+            const { val, cn, close } = cell;
+
+            if (val === '**') {
+                td.innerHTML = `<span class="red number-value">**</span>`;
+                return;
+            }
+
+            const red = isRed(val);
+            const total = digitTotal(val);
+            const diffTotal = digitDiffTotal(val);
+
+            const leftCorner = `<span class="corner left">${total !== null ? total : ''}</span>`;
+            const rightCorner = `<span class="corner right">${diffTotal !== null ? diffTotal : ''}</span>`;
+            const middle = `<span class="${red ? 'red' : ''} number-value">${val}</span>`;
+            const bottom = (cn !== null && close !== null) ? `<span class="conditions">${cn}-${close}</span>` : '';
+
+            td.innerHTML = leftCorner + rightCorner + middle + bottom;
+        }
+
+        // Render entire grid (preserve existing saved values)
+        function renderGrid(newRows = ROWS, newCols = COLS) {
+            ROWS = newRows; COLS = newCols;
+            tbody.innerHTML = "";
+
+            // normalize gridData size without losing saved content
+            const newGrid = Array.from({ length: ROWS }, (_, r) =>
+                Array.from({ length: COLS }, (_, c) => (gridData[r] && gridData[r][c]) ? gridData[r][c] : null)
+            );
+            gridData = newGrid;
+
+            for (let r = 0; r < ROWS; r++) {
+                const tr = document.createElement("tr");
+                for (let c = 0; c < COLS; c++) {
+                    const td = document.createElement("td");
+
+                    td.addEventListener("click", () => {
+                        td.innerHTML = "";
+                        const input = document.createElement("input");
+                        input.type = "text";
+                        input.maxLength = 2;
+                        input.className = "cell-input";
+                        input.value = gridData[r][c]?.val || "";
+                        td.appendChild(input);
+                        input.focus();
+
+                        // when typing a valid value, finalize on input (quick UX)
+                        input.addEventListener("input", () => {
+                            const val = input.value.trim();
+                            if (val === "**" || /^\d{2}$/.test(val)) {
+                                input.blur();
+                            }
+                        });
+
+                        input.addEventListener("blur", () => {
+                            const val = input.value.trim();
+                            if (val === "**") {
+                                gridData[r][c] = { val, cn: null, close: null };
+                            } else if (/^\d{2}$/.test(val)) {
+                                const cn = calculateCN(val);
+                                const close = calculateCloseCond(val);
+                                gridData[r][c] = { val, cn, close };
+                            } else {
+                                gridData[r][c] = null;
+                            }
+                            renderCellContent(td, r, c);
+                            saveChart();
+
+                            // auto focus next cell
+                            let nextRow = r, nextCol = c + 1;
+                            if (nextCol >= COLS) { nextCol = 0; nextRow = r + 1; }
+                            if (nextRow < ROWS) {
+                                const nextCell = tbody.rows[nextRow]?.cells[nextCol];
+                                if (nextCell) nextCell.click();
+                            }
+                        });
+                    });
+
+                    // if data present, render it
+                    if (gridData[r] && gridData[r][c]) {
+                        renderCellContent(td, r, c);
+                    }
+
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Quick-fill from the input string (keeps previous behavior)
+        function fillGridFromQuickInput() {
+            const quickInput = document.getElementById('quick-input').value.trim();
+            if (!quickInput) return;
+            const chunks = quickInput.split(/\s+/).map(chunk => chunk.trim());
+            let row = 0;
+            let col = 0;
+
+            chunks.forEach(chunk => {
+                if (row >= ROWS) return;
+                if (chunk === '*' || chunk === '**') {
+                    gridData[row][col] = { val: '**', cn: null, close: null };
+                } else if (/^\d{2}$/.test(chunk)) {
+                    const cn = calculateCN(chunk);
+                    const close = calculateCloseCond(chunk);
+                    gridData[row][col] = { val: chunk, cn, close };
+                }
+                col++;
+                if (col >= COLS) { col = 0; row++; }
+            });
+
+            renderGrid(ROWS, COLS);
+            saveChart();
+            document.getElementById('quick-input').value = '';
+        }
+
+        // Resize chart keeping existing values inside bounds
+        function resizeChart() {
+            const newRows = parseInt(document.getElementById('rowsModify').value) || ROWS;
+            const newCols = parseInt(document.getElementById('colsModify').value) || COLS;
+            if (newRows < 1 || newCols < 1 || newCols > 10) {
+                alert('Rows must be at least 1, and Columns must be between 1 and 10.');
+                return;
+            }
+            const newGridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
+            for (let r = 0; r < Math.min(ROWS, newRows); r++) {
+                for (let c = 0; c < Math.min(COLS, newCols); c++) {
+                    newGridData[r][c] = gridData[r][c];
+                }
+            }
+            gridData = newGridData;
+            ROWS = newRows; COLS = newCols;
+            renderGrid(ROWS, COLS);
+            saveChart();
+        }
+
+        // Save/load charts to localStorage (keeps your existing format)
+        function saveChart() {
+            if (!currentChartName) {
+                currentChartName = document.getElementById('chart-name-input').value || `Chart-${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+            }
+            const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
+            history[currentChartName] = {
+                rows: ROWS,
+                cols: COLS,
+                data: JSON.parse(JSON.stringify(gridData))
+            };
+            localStorage.setItem('chartHistory', JSON.stringify(history));
+        }
+
+        function loadChart(label) {
+            const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
+            const savedChart = history[label];
+            if (!savedChart) return;
+            currentChartName = label;
+            ROWS = savedChart.rows;
+            COLS = savedChart.cols;
+            gridData = savedChart.data;
+            chartNameHeader.textContent = `Editing: ${currentChartName}`;
+            document.getElementById('initial-setup').classList.add('hidden');
+            document.getElementById('chart-main').classList.remove('hidden');
+            renderGrid(ROWS, COLS);
+            document.getElementById('rowsModify').value = ROWS;
+            document.getElementById('colsModify').value = COLS;
+        }
+
+        function clearGrid() {
+            gridData = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+            renderGrid(ROWS, COLS);
+            saveChart();
+        }
+
+        function newChart() {
+            document.getElementById('initial-setup').classList.remove('hidden');
+            document.getElementById('chart-main').classList.add('hidden');
+            document.getElementById('chart-name-input').value = '';
+            currentChartName = null;
+        }
+
+        // Create button behavior: open main chart view with chosen size
+        createBtn.addEventListener('click', () => {
+            const name = document.getElementById('chart-name-input').value.trim();
+            const newRows = parseInt(document.getElementById('rowsInput').value) || ROWS;
+            const newCols = parseInt(document.getElementById('colsInput').value) || COLS;
+            if (!name) {
+                alert('Please enter a chart name.');
+                return;
+            }
+            currentChartName = name;
+            gridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
+            chartNameHeader.textContent = `Editing: ${currentChartName}`;
+            document.getElementById('initial-setup').classList.add('hidden');
+            document.getElementById('chart-main').classList.remove('hidden');
+            renderGrid(newRows, newCols);
+            saveChart();
+            document.getElementById('rowsModify').value = newRows;
+            document.getElementById('colsModify').value = newCols;
+        });
+
+        saveBtn.addEventListener('click', () => { saveChart(); alert('Chart saved.'); });
+
+        // Hook up quick-fill and resize controls
+        document.getElementById('fill-grid-btn').addEventListener('click', fillGridFromQuickInput);
+        document.getElementById('resize-btn').addEventListener('click', resizeChart);
+
+        // Support loading chart if user navigated from store/info pages
+        const chartToLoad = localStorage.getItem('chartToLoad');
+        if (chartToLoad) {
+            loadChart(chartToLoad);
+            localStorage.removeItem('chartToLoad');
+        }
+
+        // initial render
+        renderGrid(ROWS, COLS);
+    </script>
+</body>
+</html>

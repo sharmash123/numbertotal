@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Number-Cal: Home (Image Editor)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap">
+        <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number-Cal: Home (Image Editor)</h1>
+        <nav class="flex gap-4">
+            <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Charts
+            </a>
+            <a href="store.html" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Store
+            </a>
+            <a href="info.html" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Tables
+            </a>
+        </nav>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center">
+        <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Your Advanced Creative Canvas</h2>
+        <p class="text-center text-gray-600 mb-8">Upload multiple images, draw, annotate, and save your projects!</p>
+
+        <div class="flex flex-wrap justify-center items-center gap-4 mb-6 w-full max-w-4xl">
+            <label class="tool-button bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+                <input type="file" id="image-upload" accept="image/*" class="hidden" multiple capture="camera" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                Upload / Take Photo
+            </label>
+            <button id="select-tool" class="tool-button bg-gray-200 text-gray-800 hover:bg-gray-300 active" data-tooltip-target="tooltip-select">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897m4.905-2.768l.214 2.925m-3.975 3.729l-.184 1.49M15.122 6.04a9.043 9.043 0 013.658 1.188M19.5 10.5h1m-1 3h1m-1 3h1M14 18h1m-1 3h1M5.923 18.525A7.38 7.38 0 006.05 15H3a2 2 0 012-2.5 3.5 3.5 0 013.5-3.5h.5c.35 0 .69.052 1 .147m-8.15 4.757L4 18.5V19a2 2 0 002 2h4.5a2.5 2.5 0 002.5-2.5V17a2 2 0 00-2-2h-3.5L7.05 15" /></svg>
+                <span role="tooltip" id="tooltip-select" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Select/Move Images</span>
+            </button>
+            <button id="pen-tool" class="tool-button bg-indigo-500 text-white hover:bg-indigo-600" data-tooltip-target="tooltip-pen">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                <span role="tooltip" id="tooltip-pen" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Draw (Pen)</span>
+            </button>
+            <button id="eraser-tool" class="tool-button bg-pink-500 text-white hover:bg-pink-600" data-tooltip-target="tooltip-eraser">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span role="tooltip" id="tooltip-eraser" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Erase Drawing</span>
+            </button>
+            <button id="text-tool" class="tool-button bg-yellow-500 text-white hover:bg-yellow-600" data-tooltip-target="tooltip-text">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                <span role="tooltip" id="tooltip-text" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Add Text</span>
+            </button>
+            <button id="rect-tool" class="tool-button bg-teal-500 text-white hover:bg-teal-600" data-tooltip-target="tooltip-rect">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" /></svg>
+                <span role="tooltip" id="tooltip-rect" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Draw Rectangle</span>
+            </button>
+             <button id="circle-tool" class="tool-button bg-orange-500 text-white hover:bg-orange-600" data-tooltip-target="tooltip-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span role="tooltip" id="tooltip-circle" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Draw Circle</span>
+            </button>
+            <button id="line-tool" class="tool-button bg-green-500 text-white hover:bg-green-600" data-tooltip-target="tooltip-line">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                <span role="tooltip" id="tooltip-line" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Draw Line</span>
+            </button>
+            <input type="color" id="pen-color" value="#000000" class="w-10 h-10 rounded-full border-2 border-gray-300 cursor-pointer transition-transform duration-200 hover:scale-110" data-tooltip-target="tooltip-color">
+            <span role="tooltip" id="tooltip-color" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Pen Color</span>
+            <input type="range" id="pen-width" min="1" max="50" value="5" class="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 data-tooltip-target="tooltip-width">
+            <span role="tooltip" id="tooltip-width" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Pen/Eraser Width</span>
+
+            <button id="clear-draw-layer" class="tool-button bg-red-400 text-white hover:bg-red-500" data-tooltip-target="tooltip-clear-draw">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span role="tooltip" id="tooltip-clear-draw" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Clear Drawing Layer</span>
+            </button>
+            <button id="save-project" class="tool-button bg-green-600 text-white hover:bg-green-700" data-tooltip-target="tooltip-save">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                <span role="tooltip" id="tooltip-save" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Save Project</span>
+            </button>
+             <button id="load-project" class="tool-button bg-blue-600 text-white hover:bg-blue-700" data-tooltip-target="tooltip-load">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004 12v1m6.707-3.707L13.707 9h7.025A2.375 2.375 0 0124 12c0 1.34-1.076 2.441-2.375 2.5h-7.025l-3 3-2.5-2.5m-3.5 0A8.001 8.001 0 0118.024 16h-3.952m0 0a8.001 8.001 0 01-14.004-3" /></svg>
+                <span role="tooltip" id="tooltip-load" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 -bottom-10 left-1/2 transform -translate-x-1/2">Load Project</span>
+            </button>
+        </div>
+
+        <div id="editor-container" class="w-full flex justify-center mt-4">
+            <div id="canvas-area" class="relative">
+                <canvas id="image-canvas" class="absolute top-0 left-0" style="z-index: 2;"></canvas>
+                <canvas id="drawing-canvas" class="absolute top-0 left-0" style="z-index: 3;"></canvas>
+            </div>
+
+            <div id="layer-panel" class="sidebar ml-4">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Layers</h3>
+                <div id="image-layers-list">
+                    <p class="text-gray-500 text-sm">No images uploaded yet.</p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800">Selected Image Controls</h3>
+                    <div id="selected-image-controls" class="space-y-2 hidden">
+                        <button id="bring-forward" class="w-full bg-blue-400 text-white py-2 rounded hover:bg-blue-500 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414L6.586 9H4a1 1 0 000 2h2.586l2.707 2.707a1 1 0 001.414-1.414L9.414 11H12a1 1 0 000-2H9.414l1.293-1.293z" clip-rule="evenodd" /></svg>
+                            Bring Forward
+                        </button>
+                        <button id="send-backward" class="w-full bg-blue-400 text-white py-2 rounded hover:bg-blue-500 flex items-center justify-center gap-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414L6.586 9H4a1 1 0 000 2h2.586l2.707 2.707a1 1 0 001.414-1.414L9.414 11H12a1 1 0 000-2H9.414l1.293-1.293z" clip-rule="evenodd" /></svg>
+                            Send Backward
+                        </button>
+                        <button id="lock-image" class="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2h2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>
+                            <span>Lock Image</span>
+                        </button>
+                         <button id="delete-selected-image" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>
+                            Delete Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const imageCanvas = document.getElementById('image-canvas');
+        const imageCtx = imageCanvas.getContext('2d');
+        const drawingCanvas = document.getElementById('drawing-canvas');
+        const drawingCtx = drawingCanvas.getContext('2d');
+        const imageUpload = document.getElementById('image-upload');
+        const layerPanel = document.getElementById('layer-panel');
+        const imageLayersList = document.getElementById('image-layers-list');
+        const selectedImageControls = document.getElementById('selected-image-controls');
+        
+        const tools = {
+            'select': document.getElementById('select-tool'),
+            'pen': document.getElementById('pen-tool'),
+            'eraser': document.getElementById('eraser-tool'),
+            'text': document.getElementById('text-tool'),
+            'rect': document.getElementById('rect-tool'),
+            'circle': document.getElementById('circle-tool'),
+            'line': document.getElementById('line-tool')
+        };
+        const penColorInput = document.getElementById('pen-color');
+        const penWidthInput = document.getElementById('pen-width');
+        const clearDrawLayerBtn = document.getElementById('clear-draw-layer');
+        const saveProjectBtn = document.getElementById('save-project');
+        const loadProjectBtn = document.getElementById('load-project');
+        const bringForwardBtn = document.getElementById('bring-forward');
+        const sendBackwardBtn = document.getElementById('send-backward');
+        const lockImageBtn = document.getElementById('lock-image');
+        const deleteSelectedImageBtn = document.getElementById('delete-selected-image');
+
+        let currentTool = 'select';
+        let isDrawing = false;
+        let isDraggingImage = false;
+        let isResizingImage = false;
+        let isRotatingImage = false;
+        let startX, startY;
+        let lastX, lastY;
+
+        let imageLayers = [];
+        let drawingStrokes = [];
+        let drawingShapes = [];
+        
+        let selectedImage = null;
+        let selectedHandle = null;
+
+        let tempShape = null;
+        let textInputBox = null;
+
+        function setCanvasSize() {
+            const containerWidth = document.getElementById('canvas-area').offsetWidth;
+            const containerHeight = window.innerHeight * 0.7;
+            
+            imageCanvas.width = containerWidth;
+            imageCanvas.height = containerHeight;
+            drawingCanvas.width = containerWidth;
+            drawingCanvas.height = containerHeight;
+
+            imageCtx.lineJoin = 'round';
+            imageCtx.lineCap = 'round';
+            drawingCtx.lineJoin = 'round';
+            drawingCtx.lineCap = 'round';
+
+            redrawAllLayers();
+        }
+
+        window.onload = setCanvasSize;
+        window.onresize = setCanvasSize;
+
+        function redrawAllLayers() {
+            imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+            imageLayers.forEach(layer => {
+                if (layer.image && layer.image.complete) {
+                    imageCtx.save();
+                    imageCtx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
+                    imageCtx.rotate(layer.rotation * Math.PI / 180);
+                    imageCtx.drawImage(layer.image, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+                    imageCtx.restore();
+                }
+            });
+
+            drawingStrokes.forEach(stroke => {
+                drawingCtx.strokeStyle = stroke.color;
+                drawingCtx.lineWidth = stroke.width;
+                drawingCtx.globalCompositeOperation = stroke.tool === 'eraser' ? 'destination-out' : 'source-over';
+                if (stroke.points.length > 1) {
+                    drawingCtx.beginPath();
+                    drawingCtx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                    for (let i = 1; i < stroke.points.length; i++) {
+                        drawingCtx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                    }
+                    drawingCtx.stroke();
+                }
+            });
+
+            drawingShapes.forEach(shape => {
+                drawingCtx.strokeStyle = shape.color;
+                drawingCtx.fillStyle = shape.color;
+                drawingCtx.lineWidth = shape.width;
+                drawingCtx.globalCompositeOperation = 'source-over';
+
+                if (shape.tool === 'rect') {
+                    drawingCtx.strokeRect(shape.x, shape.y, shape.x2 - shape.x, shape.y2 - shape.y);
+                } else if (shape.tool === 'circle') {
+                    const radius = Math.sqrt(Math.pow(shape.x2 - shape.x, 2) + Math.pow(shape.y2 - shape.y, 2));
+                    drawingCtx.beginPath();
+                    drawingCtx.arc(shape.x, shape.y, radius, 0, Math.PI * 2);
+                    drawingCtx.stroke();
+                } else if (shape.tool === 'line') {
+                    drawingCtx.beginPath();
+                    drawingCtx.moveTo(shape.x, shape.y);
+                    drawingCtx.lineTo(shape.x2, shape.y2);
+                    drawingCtx.stroke();
+                } else if (shape.tool === 'text') {
+                    drawingCtx.font = `${shape.fontSize}px Poppins`;
+                    drawingCtx.fillText(shape.text, shape.x, shape.y);
+                }
+            });
+
+            drawSelectionHandles();
+        }
+
+        function drawSelectionHandles() {
+            document.querySelectorAll('.transform-handle').forEach(handle => handle.remove());
+            if (selectedImage && currentTool === 'select') {
+                const img = selectedImage;
+                const canvasArea = document.getElementById('canvas-area');
+                const selectionBox = document.createElement('div');
+                selectionBox.style.position = 'absolute';
+                selectionBox.style.width = `${img.width}px`;
+                selectionBox.style.height = `${img.height}px`;
+                selectionBox.style.left = `${img.x}px`;
+                selectionBox.style.top = `${img.y}px`;
+                selectionBox.style.border = '2px dashed #3b82f6';
+                selectionBox.style.pointerEvents = 'none';
+                selectionBox.style.transformOrigin = 'center center';
+                selectionBox.style.transform = `rotate(${img.rotation}deg)`;
+                selectionBox.style.zIndex = '99';
+                canvasArea.appendChild(selectionBox);
+
+                const handles = [
+                    { class: 'handle-nw', cursor: 'nwse-resize' },
+                    { class: 'handle-ne', cursor: 'nesw-resize' },
+                    { class: 'handle-sw', cursor: 'nesw-resize' },
+                    { class: 'handle-se', cursor: 'nwse-resize' },
+                    { class: 'handle-rotate', cursor: 'grab' }
+                ];
+                handles.forEach(handleInfo => {
+                    const handle = document.createElement('div');
+                    handle.className = `transform-handle ${handleInfo.class}`;
+                    handle.style.cursor = handleInfo.cursor;
+                    handle.dataset.handle = handleInfo.class;
+                    selectionBox.appendChild(handle);
+                    handle.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        if (selectedImage.locked) return;
+                        selectedHandle = handleInfo.class;
+                        isResizingImage = true;
+                        if (selectedHandle === 'handle-rotate') {
+                            isRotatingImage = true;
+                        }
+                        startX = e.clientX;
+                        startY = e.clientY;
+                    });
+                });
+            }
+        }
+
+
+        // --- Event Handlers ---
+        imageUpload.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const id = Date.now();
+                            const layer = {
+                                id: id,
+                                image: img,
+                                x: (imageCanvas.width / 2) - (img.width / 4),
+                                y: (imageCanvas.height / 2) - (img.height / 4),
+                                width: img.width / 2,
+                                height: img.height / 2,
+                                rotation: 0,
+                                locked: false
+                            };
+                            imageLayers.push(layer);
+                            renderImageLayersList();
+                            redrawAllLayers();
+                            selectImage(layer);
+                        };
+                        img.onerror = (e) => {
+                             console.error("Error loading image from file reader.", e);
+                             alert("Failed to load image. Please try another file.");
+                        };
+                        reader.readAsDataURL(file);
+                    };
+                    reader.onerror = (e) => {
+                         console.error("Error reading file.", e);
+                         alert("Failed to read the file. It might be corrupted or too large.");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            e.target.value = '';
+        });
+
+        function switchTool(toolName) {
+            Object.keys(tools).forEach(key => {
+                tools[key].classList.remove('active');
+            });
+            tools[toolName].classList.add('active');
+            currentTool = toolName;
+            
+            if (toolName !== 'select' && selectedImage) {
+                selectedImage = null;
+                redrawAllLayers();
+                renderImageLayersList();
+                selectedImageControls.classList.add('hidden');
+            }
+
+            if (textInputBox) {
+                textInputBox.remove();
+                textInputBox = null;
+            }
+        }
+
+        Object.keys(tools).forEach(key => {
+            tools[key].addEventListener('click', () => switchTool(key));
+        });
+        penColorInput.addEventListener('input', (e) => {
+            drawingCtx.strokeStyle = e.target.value;
+            drawingCtx.fillStyle = e.target.value;
+        });
+        penWidthInput.addEventListener('input', (e) => {
+            drawingCtx.lineWidth = e.target.value;
+        });
+
+        switchTool('select');
+        drawingCtx.strokeStyle = penColorInput.value;
+        drawingCtx.fillStyle = penColorInput.value;
+        drawingCtx.lineWidth = penWidthInput.value;
+
+        clearDrawLayerBtn.addEventListener('click', () => {
+            drawingStrokes = [];
+            drawingShapes = [];
+            redrawAllLayers();
+            saveProject();
+        });
+
+        // Use drawingCanvas for all mouse events to ensure proper capture
+        drawingCanvas.addEventListener('mousedown', (e) => {
+            const rect = drawingCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (currentTool === 'select') {
+                const clickedImage = imageLayers.slice().reverse().find(layer => {
+                    const dx = mouseX - (layer.x + layer.width / 2);
+                    const dy = mouseY - (layer.y + layer.height / 2);
+                    const cos = Math.cos(-layer.rotation * Math.PI / 180);
+                    const sin = Math.sin(-layer.rotation * Math.PI / 180);
+                    const rotatedX = dx * cos - dy * sin + (layer.x + layer.width / 2);
+                    const rotatedY = dx * sin + dy * cos + (layer.y + layer.height / 2);
+                    return rotatedX >= layer.x && rotatedX <= (layer.x + layer.width) &&
+                           rotatedY >= layer.y && rotatedY <= (layer.y + layer.height);
+                });
+
+                if (clickedImage && !clickedImage.locked) {
+                    selectImage(clickedImage);
+                    isDraggingImage = true;
+                    startX = e.clientX - clickedImage.x;
+                    startY = e.clientY - clickedImage.y;
+                } else {
+                    selectImage(null);
+                }
+            } else if (currentTool === 'pen' || currentTool === 'eraser') {
+                isDrawing = true;
+                const newStroke = {
+                    tool: currentTool,
+                    color: currentTool === 'pen' ? penColorInput.value : '#000000',
+                    width: penWidthInput.value,
+                    points: [{ x: mouseX, y: mouseY }]
+                };
+                drawingStrokes.push(newStroke);
+                lastX = mouseX;
+                lastY = mouseY;
+            } else if (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'line') {
+                isDrawing = true;
+                tempShape = {
+                    tool: currentTool,
+                    color: penColorInput.value,
+                    width: penWidthInput.value,
+                    x: mouseX,
+                    y: mouseY,
+                    x2: mouseX,
+                    y2: mouseY
+                };
+            } else if (currentTool === 'text') {
+                if (textInputBox) {
+                    textInputBox.remove();
+                }
+                const canvasAreaRect = document.getElementById('canvas-area').getBoundingClientRect();
+                textInputBox = document.createElement('input');
+                textInputBox.type = 'text';
+                textInputBox.placeholder = 'Type text here...';
+                textInputBox.style.position = 'absolute';
+                textInputBox.style.left = `${e.clientX - canvasAreaRect.left}px`;
+                textInputBox.style.top = `${e.clientY - canvasAreaRect.top}px`;
+                textInputBox.style.zIndex = 1000;
+                textInputBox.style.border = '1px solid #3b82f6';
+                textInputBox.style.padding = '0.2rem 0.5rem';
+                textInputBox.style.borderRadius = '4px';
+                textInputBox.style.fontFamily = 'Poppins, sans-serif';
+                textInputBox.style.fontSize = `${penWidthInput.value * 1.5}px`;
+                document.getElementById('canvas-area').appendChild(textInputBox);
+                textInputBox.focus();
+
+                textInputBox.addEventListener('blur', () => {
+                    const text = textInputBox.value.trim();
+                    if (text) {
+                        drawingShapes.push({
+                            tool: 'text',
+                            color: penColorInput.value,
+                            fontSize: parseInt(textInputBox.style.fontSize),
+                            text: text,
+                            x: parseInt(textInputBox.style.left),
+                            y: parseInt(textInputBox.style.top) + parseInt(textInputBox.style.fontSize)
+                        });
+                        redrawAllLayers();
+                        saveProject();
+                    }
+                    textInputBox.remove();
+                    textInputBox = null;
+                });
+                textInputBox.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        textInputBox.blur();
+                    }
+                });
+            }
+        });
+
+        drawingCanvas.addEventListener('mousemove', (e) => {
+            const rect = drawingCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (currentTool === 'select' && selectedImage && isDraggingImage && !selectedImage.locked) {
+                selectedImage.x = e.clientX - startX;
+                selectedImage.y = e.clientY - startY;
+                redrawAllLayers();
+                saveProject();
+            } else if (isResizingImage && selectedImage && !selectedImage.locked) {
+                const img = selectedImage;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                const originalX = img.x;
+                const originalY = img.y;
+                const originalWidth = img.width;
+                const originalHeight = img.height;
+                if (selectedHandle === 'handle-nw') {
+                    img.x += dx; img.y += dy;
+                    img.width -= dx; img.height -= dy;
+                } else if (selectedHandle === 'handle-ne') {
+                    img.y += dy;
+                    img.width += dx; img.height -= dy;
+                } else if (selectedHandle === 'handle-sw') {
+                    img.x += dx;
+                    img.width -= dx; img.height += dy;
+                } else if (selectedHandle === 'handle-se') {
+                    img.width += dx; img.height += dy;
+                } else if (selectedHandle === 'handle-n') {
+                    img.y += dy; img.height -= dy;
+                } else if (selectedHandle === 'handle-s') {
+                    img.height += dy;
+                } else if (selectedHandle === 'handle-w') {
+                    img.x += dx; img.width -= dx;
+                } else if (selectedHandle === 'handle-e') {
+                    img.width += dx;
+                } else if (selectedHandle === 'handle-rotate') {
+                    const centerX = img.x + img.width / 2;
+                    const centerY = img.y + img.height / 2;
+                    const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
+                    img.rotation = angle - 90;
+                }
+                img.width = Math.max(10, img.width);
+                img.height = Math.max(10, img.height);
+                if (selectedHandle === 'handle-nw' || selectedHandle === 'handle-sw' || selectedHandle === 'handle-w') {
+                    img.x = originalX + (originalWidth - img.width);
+                }
+                if (selectedHandle === 'handle-nw' || selectedHandle === 'handle-ne' || selectedHandle === 'handle-n') {
+                     img.y = originalY + (originalHeight - img.height);
+                }
+                startX = e.clientX;
+                startY = e.clientY;
+                redrawAllLayers();
+                saveProject();
+            } else if (isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) {
+                const currentStroke = drawingStrokes[drawingStrokes.length - 1];
+                currentStroke.points.push({ x: mouseX, y: mouseY });
+                drawingCtx.strokeStyle = currentStroke.color;
+                drawingCtx.lineWidth = currentStroke.width;
+                drawingCtx.globalCompositeOperation = currentStroke.tool === 'eraser' ? 'destination-out' : 'source-over';
+                drawingCtx.beginPath();
+                drawingCtx.moveTo(lastX, lastY);
+                drawingCtx.lineTo(mouseX, mouseY);
+                drawingCtx.stroke();
+                lastX = mouseX;
+                lastY = mouseY;
+            } else if (isDrawing && (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'line')) {
+                tempShape.x2 = mouseX;
+                tempShape.y2 = mouseY;
+                redrawAllLayers();
+                drawTempShape();
+            }
+        });
+
+        drawingCanvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            isDraggingImage = false;
+            isResizingImage = false;
+            isRotatingImage = false;
+            selectedHandle = null;
+            if (tempShape) {
+                drawingShapes.push(tempShape);
+                tempShape = null;
+                redrawAllLayers();
+            }
+            saveProject();
+        });
+
+        drawingCanvas.addEventListener('mouseout', () => {
+            if (isDrawing) {
+                if (tempShape) {
+                    drawingShapes.push(tempShape);
+                    tempShape = null;
+                    redrawAllLayers();
+                    saveProject();
+                }
+            }
+            isDrawing = false;
+        });
+
+        function drawTempShape() {
+            if (!tempShape) return;
+            drawingCtx.strokeStyle = tempShape.color;
+            drawingCtx.lineWidth = tempShape.width;
+            drawingCtx.globalCompositeOperation = 'source-over';
+            drawingCtx.beginPath();
+
+            if (tempShape.tool === 'rect') {
+                drawingCtx.strokeRect(tempShape.x, tempShape.y, tempShape.x2 - tempShape.x, tempShape.y2 - tempShape.y);
+            } else if (tempShape.tool === 'circle') {
+                const radius = Math.sqrt(Math.pow(tempShape.x2 - tempShape.x, 2) + Math.pow(tempShape.y2 - tempShape.y, 2));
+                drawingCtx.arc(tempShape.x, tempShape.y, radius, 0, Math.PI * 2);
+                drawingCtx.stroke();
+            } else if (tempShape.tool === 'line') {
+                drawingCtx.moveTo(tempShape.x, tempShape.y);
+                drawingCtx.lineTo(tempShape.x2, tempShape.y2);
+                drawingCtx.stroke();
+            }
+        }
+
+        function renderImageLayersList() {
+            imageLayersList.innerHTML = '';
+            if (imageLayers.length === 0) {
+                imageLayersList.innerHTML = '<p class="text-gray-500 text-sm">No images uploaded yet.</p>';
+                selectedImageControls.classList.add('hidden');
+                return;
+            }
+
+            imageLayers.slice().reverse().forEach(layer => {
+                const layerDiv = document.createElement('div');
+                layerDiv.className = `layer-item ${selectedImage && selectedImage.id === layer.id ? 'selected' : ''}`;
+                if (layer.locked) {
+                    layerDiv.classList.add('bg-gray-200', 'opacity-75', 'cursor-not-allowed');
+                }
+                const img = document.createElement('img');
+                img.src = layer.image.src;
+                img.alt = `Layer ${layer.id}`;
+                img.className = 'layer-item-thumbnail';
+                layerDiv.appendChild(img);
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = `Image ${layer.id}`;
+                nameSpan.className = 'flex-grow';
+                layerDiv.appendChild(nameSpan);
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex gap-2 items-center';
+                const lockIcon = document.createElement('button');
+                lockIcon.className = `p-1 rounded ${layer.locked ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-600'} hover:bg-gray-300`;
+                lockIcon.innerHTML = layer.locked 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 016 0v2a1 1 0 102 0V7a5 5 0 00-5-5z"/></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2h2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>`;
+                lockIcon.title = layer.locked ? 'Unlock' : 'Lock';
+                lockIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    layer.locked = !layer.locked;
+                    redrawAllLayers();
+                    renderImageLayersList();
+                    saveProject();
+                    if(selectedImage && selectedImage.id === layer.id) updateLockButtonState();
+                };
+                actionsDiv.appendChild(lockIcon);
+                const deleteIcon = document.createElement('button');
+                deleteIcon.className = 'p-1 rounded bg-red-100 text-red-600 hover:bg-red-200';
+                deleteIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>`;
+                deleteIcon.title = 'Delete Image';
+                deleteIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm('Are you sure you want to delete this image?')) {
+                        imageLayers = imageLayers.filter(l => l.id !== layer.id);
+                        if (selectedImage && selectedImage.id === layer.id) {
+                            selectedImage = null;
+                            selectedImageControls.classList.add('hidden');
+                        }
+                        redrawAllLayers();
+                        renderImageLayersList();
+                        saveProject();
+                    }
+                };
+                actionsDiv.appendChild(deleteIcon);
+                layerDiv.appendChild(actionsDiv);
+                layerDiv.addEventListener('click', () => {
+                    selectImage(layer);
+                });
+                imageLayersList.appendChild(layerDiv);
+            });
+            updateLockButtonState();
+        }
+
+        function selectImage(layer) {
+            selectedImage = layer;
+            renderImageLayersList();
+            redrawAllLayers();
+            if (selectedImage) {
+                selectedImageControls.classList.remove('hidden');
+            } else {
+                selectedImageControls.classList.add('hidden');
+            }
+            updateLockButtonState();
+        }
+
+        function updateLockButtonState() {
+            if (selectedImage) {
+                lockImageBtn.querySelector('span').textContent = selectedImage.locked ? 'Unlock Image' : 'Lock Image';
+                lockImageBtn.querySelector('svg').outerHTML = selectedImage.locked 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 016 0v2a1 1 0 102 0V7a5 5 0 00-5-5z"/></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2h2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>`;
+                lockImageBtn.classList.toggle('bg-gray-500', !selectedImage.locked);
+                lockImageBtn.classList.toggle('bg-red-500', selectedImage.locked);
+                lockImageBtn.classList.toggle('hover:bg-gray-600', !selectedImage.locked);
+                lockImageBtn.classList.toggle('hover:bg-red-600', selectedImage.locked);
+                bringForwardBtn.disabled = selectedImage.locked;
+                sendBackwardBtn.disabled = selectedImage.locked;
+                deleteSelectedImageBtn.disabled = false;
+            }
+        }
+
+        bringForwardBtn.addEventListener('click', () => {
+            if (selectedImage && !selectedImage.locked) {
+                const index = imageLayers.indexOf(selectedImage);
+                if (index < imageLayers.length - 1) {
+                    imageLayers.splice(index, 1);
+                    imageLayers.splice(index + 1, 0, selectedImage);
+                    redrawAllLayers();
+                    renderImageLayersList();
+                    saveProject();
+                }
+            }
+        });
+
+        sendBackwardBtn.addEventListener('click', () => {
+            if (selectedImage && !selectedImage.locked) {
+                const index = imageLayers.indexOf(selectedImage);
+                if (index > 0) {
+                    imageLayers.splice(index, 1);
+                    imageLayers.splice(index - 1, 0, selectedImage);
+                    redrawAllLayers();
+                    renderImageLayersList();
+                    saveProject();
+                }
+            }
+        });
+
+        lockImageBtn.addEventListener('click', () => {
+            if (selectedImage) {
+                selectedImage.locked = !selectedImage.locked;
+                redrawAllLayers();
+                renderImageLayersList();
+                saveProject();
+            }
+        });
+
+        deleteSelectedImageBtn.addEventListener('click', () => {
+            if (selectedImage) {
+                if (confirm('Are you sure you want to delete this selected image?')) {
+                    imageLayers = imageLayers.filter(l => l.id !== selectedImage.id);
+                    selectedImage = null;
+                    redrawAllLayers();
+                    renderImageLayersList();
+                    saveProject();
+                }
+            }
+        });
+
+        saveProjectBtn.addEventListener('click', () => {
+            const projectData = {
+                imageLayers: imageLayers.map(layer => ({
+                    id: layer.id,
+                    src: layer.image.src,
+                    x: layer.x, y: layer.y,
+                    width: layer.width, height: layer.height,
+                    rotation: layer.rotation,
+                    locked: layer.locked
+                })),
+                drawingStrokes: drawingStrokes,
+                drawingShapes: drawingShapes
+            };
+            try {
+                localStorage.setItem('canvasProject', JSON.stringify(projectData));
+                alert('Project saved successfully!');
+            } catch (e) {
+                alert('Error saving project. Local storage might be full. Try clearing some data or uploading smaller images.');
+                console.error('Error saving project:', e);
+            }
+        });
+
+        loadProjectBtn.addEventListener('click', () => {
+            const savedData = localStorage.getItem('canvasProject');
+            if (savedData) {
+                const projectData = JSON.parse(savedData);
+                imageLayers = [];
+                let loadedCount = 0;
+                const totalImages = projectData.imageLayers.length;
+                if (totalImages === 0) {
+                    imageLayers = [];
+                    drawingStrokes = projectData.drawingStrokes || [];
+                    drawingShapes = projectData.drawingShapes || [];
+                    redrawAllLayers();
+                    renderImageLayersList();
+                    selectImage(null);
+                    alert('Project loaded successfully! (No images found)');
+                    return;
+                }
+                projectData.imageLayers.forEach(layerData => {
+                    const img = new Image();
+                    img.onload = () => {
+                        imageLayers.push({
+                            id: layerData.id,
+                            image: img,
+                            x: layerData.x, y: layerData.y,
+                            width: layerData.width, height: layerData.height,
+                            rotation: layerData.rotation || 0,
+                            locked: layerData.locked || false
+                        });
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            drawingStrokes = projectData.drawingStrokes || [];
+                            drawingShapes = projectData.drawingShapes || [];
+                            imageLayers.sort((a, b) => a.id - b.id);
+                            redrawAllLayers();
+                            renderImageLayersList();
+                            selectImage(null);
+                            alert('Project loaded successfully!');
+                        }
+                    };
+                    img.onerror = () => {
+                        console.error('Error loading image:', layerData.src);
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            drawingStrokes = projectData.drawingStrokes || [];
+                            drawingShapes = projectData.drawingShapes || [];
+                            imageLayers.sort((a, b) => a.id - b.id);
+                            redrawAllLayers();
+                            renderImageLayersList();
+                            selectImage(null);
+                            alert('Project loaded, but some images failed to load.');
+                        }
+                    };
+                    img.src = layerData.src;
+                });
+            } else {
+                alert('No saved project found!');
+            }
+        });
+
+        renderImageLayersList();
+        redrawAllLayers();
+    </script>
+</body>
+</html>
