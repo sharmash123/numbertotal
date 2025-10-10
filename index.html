@@ -85,7 +85,7 @@
             color: #dc2626; /* Red for Diff Total */
         }
 
-        /* Open/Close Condition (Bottom) - INCREASED to match corner size */
+        /* Open/Close Condition (Bottom) - LARGE Size */
         .conditions {
             display: block;
             font-size: 2.0rem; /* Increased to 2.0rem to match corners */
@@ -286,7 +286,12 @@
                 const tr = document.createElement("tr");
                 for (let c = 0; c < COLS; c++) {
                     const td = document.createElement("td");
-                    td.addEventListener("click", () => {
+                    
+                    // Use a function wrapper to ensure 'r' and 'c' are captured correctly
+                    const handleClick = () => {
+                        // Immediately remove the click listener to prevent recursion
+                        td.removeEventListener("click", handleClick); 
+
                         td.innerHTML = "";
                         const input = document.createElement("input");
                         input.type = "text";
@@ -296,7 +301,7 @@
                         td.appendChild(input);
                         input.focus();
 
-                        const handleInputAndBlur = () => {
+                        const handleBlur = () => {
                             const val = input.value.trim();
                             if (val === "**") {
                                 gridData[r][c] = { val, cn: null, close: null };
@@ -308,28 +313,37 @@
                                 gridData[r][c] = null;
                             }
 
+                            // Re-render content and save chart
                             renderCellContent(td, r, c);
                             saveChart();
-
-                            let nextRow = r, nextCol = c + 1;
-                            if (nextCol >= COLS) { nextCol = 0; nextRow = r + 1; }
-                            if (nextRow < ROWS) {
-                                setTimeout(() => {
-                                    tbody.rows[nextRow]?.cells[nextCol]?.click();
-                                }, 10);
-                            }
+                            
+                            // Re-attach the click listener
+                            td.addEventListener("click", handleClick, { once: true });
                         };
 
+                        // Auto-save on valid 2-digit input without forcing blur
                         input.addEventListener("input", () => {
                             const val = input.value.trim();
-                            if (val === "**" || /^\d{2}$/.test(val)) {
-                                handleInputAndBlur();
+                            if (val.length === 2 && (val === "**" || /^\d{2}$/.test(val))) {
+                                handleBlur(); // This will save and render the content
+                                
+                                // NEW LOGIC: Advance to the next cell after a valid two-character entry
+                                let nextRow = r, nextCol = c + 1;
+                                if (nextCol >= COLS) { nextCol = 0; nextRow = r + 1; }
+                                if (nextRow < ROWS) {
+                                    setTimeout(() => {
+                                        tbody.rows[nextRow]?.cells[nextCol]?.click();
+                                    }, 10);
+                                }
                             }
                         });
 
-                        input.addEventListener("blur", handleInputAndBlur);
+                        // When clicking outside of the cell, just save and re-render. NO AUTO-ADVANCE.
+                        input.addEventListener("blur", handleBlur); 
 
-                    }, { once: true });
+                    };
+
+                    td.addEventListener("click", handleClick, { once: true });
 
                     renderCellContent(td, r, c);
                     tr.appendChild(td);
