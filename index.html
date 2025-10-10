@@ -31,66 +31,66 @@
             min-width: 400px;
         }
 
-        /* Increased Cell Size for better visibility */
+        /* Further Increased Cell Size */
         td {
             border: 2px solid #000;
-            width: 140px; /* Increased from 100px */
-            height: 140px; /* Increased from 100px */
+            width: 170px; /* Increased */
+            height: 170px; /* Increased */
             text-align: center;
             font-size: 30px;
             cursor: pointer;
             background-color: #ffffff;
             position: relative;
             vertical-align: middle;
-            padding: 8px; /* Increased padding */
+            padding: 8px;
             border-radius: 8px;
         }
         input.cell-input {
             width: 100%;
             height: 100%;
-            font-size: 40px; /* Increased for input */
+            font-size: 40px;
             text-align: center;
             border: none;
             outline: none;
             background: transparent;
-            font-weight: 800; /* Made input bold */
+            font-weight: 800;
         }
         .red {
             color: red;
             font-weight: bold;
         }
         .number-value {
-            font-size: 48px; /* Increased main number size */
+            font-size: 48px; /* Main Number Size is UNCHANGED */
             font-weight: 800;
             display: block;
             line-height: 1.1;
-            margin-top: 10px; /* Adjust spacing */
+            margin-top: 10px;
         }
 
-        /* New: Total and Diff Total (Corners) */
+        /* Total and Diff Total (Corners) - INCREASED Size */
         .corner {
             position: absolute;
-            font-size: 1.4rem; /* Standard size for corners */
+            font-size: 2.0rem; /* Increased corner size */
             font-weight: 900;
             line-height: 1;
         }
         .corner.left {
-            top: 6px;
-            left: 8px;
+            top: 10px;
+            left: 12px;
             color: #16a34a; /* Green for Total */
         }
         .corner.right {
-            top: 6px;
-            right: 8px;
+            top: 10px;
+            right: 12px;
             color: #dc2626; /* Red for Diff Total */
         }
 
-        /* Open/Close Condition (Bottom) */
+        /* Open/Close Condition (Bottom) - INCREASED Size */
         .conditions {
             display: block;
-            font-size: 1.1rem; /* Slightly larger */
+            font-size: 1.5rem; /* Increased condition size */
             font-weight: 800;
-            margin-top: 5px; /* Adjust spacing */
+            margin-top: 5px;
             line-height: 1.2;
             color: #333;
         }
@@ -101,36 +101,36 @@
         /* Responsive Design */
         @media (max-width: 1024px) { /* Tablet */
             td {
-                width: 110px; /* Increased from 90px */
-                height: 110px; /* Increased from 90px */
+                width: 140px; /* Adjusted */
+                height: 140px; /* Adjusted */
             }
             .number-value {
                 font-size: 40px;
             }
             .corner {
-                font-size: 1.2rem;
+                font-size: 1.7rem;
             }
             .conditions {
-                font-size: 1rem;
+                font-size: 1.3rem;
             }
         }
         @media (max-width: 600px) { /* Mobile */
             td {
-                width: 90px; /* Increased from 80px */
-                height: 90px; /* Increased from 80px */
+                width: 120px; /* Adjusted */
+                height: 120px; /* Adjusted */
                 padding: 4px;
             }
             input.cell-input {
-                font-size: 26px;
+                font-size: 32px;
             }
             .number-value {
-                font-size: 30px;
+                font-size: 38px;
             }
             .corner {
-                font-size: 1rem;
+                font-size: 1.4rem;
             }
             .conditions {
-                font-size: 0.9rem;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -226,22 +226,18 @@
             return a === b || redPairs[a] === b;
         }
 
-        /* Added: Calculate Digit Total (Open Total) */
         function digitTotal(num){
             if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;
             const a=parseInt(num[0]),b=parseInt(num[1]);
             return (a+b)%10;
         }
 
-        /* Added: Calculate Digit Difference Total (Minus Total) */
         function digitDiffTotal(num){
             if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;
             const a=parseInt(num[0]),b=parseInt(num[1]);
-            // (10 - B) + A, then modulo 10
             return ((10 - b) + a) % 10;
         }
 
-        /* New function to render cell content completely */
         function renderCellContent(td, r, c) {
             const cell = gridData[r] && gridData[r][c];
             td.innerHTML = '';
@@ -279,7 +275,6 @@
             COLS = newCols;
             tbody.innerHTML = "";
 
-            // Re-initialize or resize gridData to ensure it matches new dimensions
             const newGridData = Array.from({ length: ROWS }, (_, r) =>
                 Array.from({ length: COLS }, (_, c) =>
                     (gridData[r] && gridData[r][c]) ? gridData[r][c] : null
@@ -319,28 +314,24 @@
                             let nextRow = r, nextCol = c + 1;
                             if (nextCol >= COLS) { nextCol = 0; nextRow = r + 1; }
                             if (nextRow < ROWS) {
-                                // Defer click to the next cell to allow for DOM update
                                 setTimeout(() => {
                                     tbody.rows[nextRow]?.cells[nextCol]?.click();
                                 }, 10);
                             }
                         };
 
-                        // Auto-blur/process on valid input
                         input.addEventListener("input", () => {
                             const val = input.value.trim();
                             if (val === "**" || /^\d{2}$/.test(val)) {
-                                // If valid, auto-process instead of relying on blur
                                 handleInputAndBlur();
                             }
                         });
 
-                        // Fallback/final processing on blur
                         input.addEventListener("blur", handleInputAndBlur);
 
-                    }, { once: true }); // Use { once: true } to prevent multiple listeners
+                    }, { once: true });
 
-                    renderCellContent(td, r, c); // Initial rendering
+                    renderCellContent(td, r, c);
                     tr.appendChild(td);
                 }
                 tbody.appendChild(tr);
@@ -391,7 +382,6 @@
                 return;
             }
 
-            // Preserve existing data within new bounds
             const newGridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
             for (let r = 0; r < Math.min(ROWS, newRows); r++) {
                 for (let c = 0; c < Math.min(COLS, newCols); c++) {
@@ -460,7 +450,6 @@
             loadingSpinner.classList.remove('hidden');
             setTimeout(() => {
                 currentChartName = name;
-                // Re-initialize gridData with the new size
                 gridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
 
                 chartNameHeader.textContent = `Editing: ${currentChartName}`;
@@ -499,13 +488,11 @@
             resizeBtn.addEventListener('click', resizeChart);
         }
 
-        // Initial render logic
         const chartToLoad = localStorage.getItem('chartToLoad');
         if (chartToLoad) {
             loadChart(chartToLoad);
             localStorage.removeItem('chartToLoad');
         } else {
-            // Initial render call with default size
             renderGrid(ROWS, COLS);
         }
     </script>
