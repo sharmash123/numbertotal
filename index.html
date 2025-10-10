@@ -1,286 +1,513 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Number-Cal: Charts</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <title>Number-Cal: Charts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 
-  <style>
-    .initial-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      max-width: 640px;
-      margin: 2.5rem auto;
-      padding: 2rem;
-      background-color: #f3f4f6;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-    }
-    .table-container { overflow-x: auto; margin: 0 auto; max-width: 100%; }
-    table { border-collapse: collapse; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.06); min-width: 400px; }
+    <style>
+        .initial-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 400px;
+            margin: 4rem auto;
+            padding: 2rem;
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-width: 400px;
+        }
 
-    td {
-      border: 2px solid #000;
-      width: 160px;
-      height: 160px;
-      text-align: center;
-      font-size: 34px;
-      cursor: pointer;
-      background-color: #ffffff;
-      position: relative;
-      vertical-align: middle;
-      padding: 8px;
-      border-radius: 12px;
-    }
-    input.cell-input {
-      width: 100%;
-      height: 100%;
-      font-size: 48px;
-      text-align: center;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-weight: 800;
-    }
+        /* Increased Cell Size for better visibility */
+        td {
+            border: 2px solid #000;
+            width: 140px; /* Increased from 100px */
+            height: 140px; /* Increased from 100px */
+            text-align: center;
+            font-size: 30px;
+            cursor: pointer;
+            background-color: #ffffff;
+            position: relative;
+            vertical-align: middle;
+            padding: 8px; /* Increased padding */
+            border-radius: 8px;
+        }
+        input.cell-input {
+            width: 100%;
+            height: 100%;
+            font-size: 40px; /* Increased for input */
+            text-align: center;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-weight: 800; /* Made input bold */
+        }
+        .red {
+            color: red;
+            font-weight: bold;
+        }
+        .number-value {
+            font-size: 48px; /* Increased main number size */
+            font-weight: 800;
+            display: block;
+            line-height: 1.1;
+            margin-top: 10px; /* Adjust spacing */
+        }
 
-    .red { color: red; font-weight: bold; }
+        /* New: Total and Diff Total (Corners) */
+        .corner {
+            position: absolute;
+            font-size: 1.4rem; /* Standard size for corners */
+            font-weight: 900;
+            line-height: 1;
+        }
+        .corner.left {
+            top: 6px;
+            left: 8px;
+            color: #16a34a; /* Green for Total */
+        }
+        .corner.right {
+            top: 6px;
+            right: 8px;
+            color: #dc2626; /* Red for Diff Total */
+        }
 
-    .number-value {
-      font-size: 56px;
-      font-weight: 800;
-      display: block;
-      line-height: 1;
-      margin-top: 6px;
-    }
+        /* Open/Close Condition (Bottom) */
+        .conditions {
+            display: block;
+            font-size: 1.1rem; /* Slightly larger */
+            font-weight: 800;
+            margin-top: 5px; /* Adjust spacing */
+            line-height: 1.2;
+            color: #333;
+        }
+        .hidden {
+            display: none;
+        }
 
-    /* open/close increased */
-    .conditions {
-      display: block;
-      font-size: 1.5rem;  /* was 1.25rem */
-      font-weight: 800;
-      margin-top: 10px;
-      line-height: 1.2;
-      color: #333;
-    }
-
-    /* total and diff (corners) */
-    .corner {
-      position: absolute;
-      font-size: 1.7rem;  /* was 1.4rem */
-      font-weight: 900;
-    }
-    .corner.left {
-      top: 6px;
-      left: 8px;
-      color: #16a34a; /* green total text only */
-    }
-    .corner.right {
-      top: 6px;
-      right: 8px;
-      color: #dc2626; /* red diff text only */
-    }
-
-    .hidden { display: none; }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      td { width: 120px; height: 120px; }
-      input.cell-input { font-size: 36px; }
-      .number-value { font-size: 44px; }
-      .conditions { font-size: 1.2rem; }
-      .corner { font-size: 1.4rem; }
-    }
-    @media (max-width: 600px) {
-      td { width: 100px; height: 100px; }
-      input.cell-input { font-size: 28px; }
-      .number-value { font-size: 36px; }
-      .conditions { font-size: 1rem; }
-      .corner { font-size: 1.2rem; }
-    }
-  </style>
+        /* Responsive Design */
+        @media (max-width: 1024px) { /* Tablet */
+            td {
+                width: 110px; /* Increased from 90px */
+                height: 110px; /* Increased from 90px */
+            }
+            .number-value {
+                font-size: 40px;
+            }
+            .corner {
+                font-size: 1.2rem;
+            }
+            .conditions {
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 600px) { /* Mobile */
+            td {
+                width: 90px; /* Increased from 80px */
+                height: 90px; /* Increased from 80px */
+                padding: 4px;
+            }
+            input.cell-input {
+                font-size: 26px;
+            }
+            .number-value {
+                font-size: 30px;
+            }
+            .corner {
+                font-size: 1rem;
+            }
+            .conditions {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
-
 <body class="bg-gray-100 font-poppins">
-  <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap">
-    <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number-Cal: Charts</h1>
-    <nav class="flex gap-4">
-      <a href="home.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">Home</a>
-      <a href="info.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">View Tables</a>
-      <a href="store.html" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors duration-300">View Store</a>
-    </nav>
-  </header>
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap">
+        <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number-Cal: Charts</h1>
+        <nav class="flex gap-4">
+            <a href="home.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Home
+            </a>
+            <a href="info.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                View Tables
+            </a>
+            <a href="store.html" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                View Store
+            </a>
+        </nav>
+    </header>
 
-  <div id="initial-setup" class="initial-form animate-fadeIn">
-    <h2 class="text-2xl font-semibold text-center mb-2">Create a New Chart</h2>
-    <input type="text" id="chart-name-input" placeholder="Enter Chart Name" class="p-2 border border-gray-300 rounded-md shadow-sm">
-    <input type="number" id="rowsInput" placeholder="Rows (e.g., 1000)" min="1" value="1000" class="p-2 border border-gray-300 rounded-md shadow-sm">
-    <input type="number" id="colsInput" placeholder="Columns (e.g., 7)" min="1" max="10" value="7" class="p-2 border border-gray-300 rounded-md shadow-sm">
-    <button id="create-chart-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors duration-300 flex items-center justify-center gap-2">Create Chart</button>
-  </div>
-
-  <div id="chart-main" class="container mx-auto p-4 md:p-8 hidden">
-    <h2 class="text-2xl font-semibold mb-4 text-center"></h2>
-
-    <div class="input-box flex flex-wrap justify-center items-center gap-4 mb-8">
-      <button id="save-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors duration-300">Save Chart</button>
-      <button onclick="clearGrid()" class="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">Clear Grid</button>
-      <button onclick="newChart()" class="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 transition-colors duration-300">Create New Chart</button>
+    <div id="initial-setup" class="initial-form animate-fadeIn">
+        <h2 class="text-2xl font-semibold text-center mb-2">Create a New Chart</h2>
+        <input type="text" id="chart-name-input" placeholder="Enter Chart Name" class="p-2 border border-gray-300 rounded-md shadow-sm">
+        <input type="number" id="rowsInput" placeholder="Rows (e.g., 100)" min="1" value="2000" class="p-2 border border-gray-300 rounded-md shadow-sm">
+        <input type="number" id="colsInput" placeholder="Columns (e.g., 7)" min="5" max="8" value="7" class="p-2 border border-gray-300 rounded-md shadow-sm">
+        <button id="create-chart-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors duration-300 flex items-center justify-center gap-2">
+            Create Chart
+            <svg id="loading-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </button>
     </div>
 
-    <div class="quick-entry flex flex-wrap justify-center items-center gap-4 mb-4">
-      <input type="text" id="quick-input" placeholder="Enter values like 08 85 06 88 **" class="p-2 border border-gray-300 rounded-md shadow-sm flex-grow max-w-md">
-      <button id="fill-grid-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors duration-300">Fill Grid</button>
+    <div id="chart-main" class="container mx-auto p-4 md:p-8 hidden">
+        <h2 class="text-2xl font-semibold mb-4 text-center"></h2>
+        <div class="input-box flex flex-wrap justify-center items-center gap-4 mb-8">
+            <button id="save-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors duration-300 flex items-center justify-center gap-2">
+                Save Chart
+                <svg id="save-symbol" class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <button onclick="clearGrid()" class="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors duration-300">Clear Grid</button>
+            <button onclick="newChart()" class="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 transition-colors duration-300">Create New Chart</button>
+        </div>
+        <div class="quick-entry flex flex-wrap justify-center items-center gap-4 mb-4">
+            <input type="text" id="quick-input" placeholder="Enter values like 08 85 06 88 **" class="p-2 border border-gray-300 rounded-md shadow-sm flex-grow max-w-md">
+            <button id="fill-grid-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors duration-300">Fill Grid</button>
+        </div>
+        <div class="modify-size flex flex-wrap justify-center items-center gap-4 mb-4">
+            <input type="number" id="rowsModify" placeholder="Modify Rows" min="1" value="2000" class="p-2 border border-gray-300 rounded-md shadow-sm">
+            <input type="number" id="colsModify" placeholder="Modify Columns" min="5" max="8" value="7" class="p-2 border border-gray-300 rounded-md shadow-sm">
+            <button id="resize-btn" class="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 transition-colors duration-300">Resize Chart</button>
+        </div>
+        <div class="table-container">
+            <table id="grid">
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="modify-size flex flex-wrap justify-center items-center gap-4 mb-4">
-      <input type="number" id="rowsModify" placeholder="Modify Rows" min="1" value="1000" class="p-2 border border-gray-300 rounded-md shadow-sm">
-      <input type="number" id="colsModify" placeholder="Modify Columns" min="1" max="10" value="7" class="p-2 border border-gray-300 rounded-md shadow-sm">
-      <button id="resize-btn" class="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 transition-colors duration-300">Resize Chart</button>
-    </div>
+    <script>
+        const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4};
+        let ROWS = 2000;
+        let COLS = 7;
+        const tbody = document.querySelector("#grid tbody");
+        const chartNameHeader = document.querySelector("#chart-main h2");
+        const createBtn = document.getElementById('create-chart-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const saveBtn = document.getElementById('save-btn');
+        const saveSymbol = document.getElementById('save-symbol');
+        let gridData = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+        let currentChartName = null;
 
-    <div class="table-container">
-      <table id="grid">
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+        function calculateCN(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0]), b = parseInt(num[1]);
+            const sum1 = a + b;
+            const sum2 = a + a;
+            return (sum1 + sum2) % 10;
+        }
 
-  <script>
-    const redPairs = {0:5,1:6,2:7,3:8,4:9,5:0,6:1,7:2,8:3,9:4};
-    let ROWS=1000,COLS=7;
-    const tbody=document.querySelector("#grid tbody");
-    const chartNameHeader=document.querySelector("#chart-main h2");
-    const createBtn=document.getElementById('create-chart-btn');
-    const saveBtn=document.getElementById('save-btn');
-    let gridData=Array.from({length:ROWS},()=>Array(COLS).fill(null));
-    let currentChartName=null;
+        function calculateCloseCond(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0]), b = parseInt(num[1]);
+            return ((a + b) % 10 + (b + b) % 10) % 10;
+        }
 
-    function calculateCN(num){if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;const a=parseInt(num[0]),b=parseInt(num[1]);return (a+b+a)%10;}
-    function calculateCloseCond(num){if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;const a=parseInt(num[0]),b=parseInt(num[1]);return ((a+b)%10+(b+b)%10)%10;}
-    function isRed(num){if(!num||num.length!==2||!/^\d{2}$/.test(num))return false;const a=parseInt(num[0]),b=parseInt(num[1]);return a===b||redPairs[a]===b;}
-    function digitTotal(num){if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;const a=parseInt(num[0]),b=parseInt(num[1]);return (a+b)%10;}
-    function digitDiffTotal(num){if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;const a=parseInt(num[0]),b=parseInt(num[1]);return ((10-b)+a)%10;}
+        function isRed(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return false;
+            const a = parseInt(num[0]), b = parseInt(num[1]);
+            return a === b || redPairs[a] === b;
+        }
 
-    function renderCellContent(td,r,c){
-      const cell=gridData[r]&&gridData[r][c];
-      td.innerHTML='';
-      if(!cell)return;
-      const {val,cn,close}=cell;
-      if(val==='**'){td.innerHTML=`<span class="red number-value">**</span>`;return;}
-      const red=isRed(val);
-      const total=digitTotal(val);
-      const diffTotal=digitDiffTotal(val);
-      const leftCorner=`<span class="corner left">${total??''}</span>`;
-      const rightCorner=`<span class="corner right">${diffTotal??''}</span>`;
-      const middle=`<span class="${red?'red':''} number-value">${val}</span>`;
-      const bottom=(cn!==null&&close!==null)?`<span class="conditions">${cn}-${close}</span>`:'';
-      td.innerHTML=leftCorner+rightCorner+middle+bottom;
-    }
+        /* Added: Calculate Digit Total (Open Total) */
+        function digitTotal(num){
+            if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;
+            const a=parseInt(num[0]),b=parseInt(num[1]);
+            return (a+b)%10;
+        }
 
-    function renderGrid(newRows=ROWS,newCols=COLS){
-      ROWS=newRows;COLS=newCols;tbody.innerHTML='';
-      const newGrid=Array.from({length:ROWS},(_,r)=>Array.from({length:COLS},(_,c)=>(gridData[r]&&gridData[r][c])?gridData[r][c]:null));
-      gridData=newGrid;
-      for(let r=0;r<ROWS;r++){
-        const tr=document.createElement("tr");
-        for(let c=0;c<COLS;c++){
-          const td=document.createElement("td");
-          td.addEventListener("click",()=>{
-            td.innerHTML="";
-            const input=document.createElement("input");
-            input.type="text";input.maxLength=2;input.className="cell-input";
-            input.value=gridData[r][c]?.val||"";td.appendChild(input);input.focus();
-            input.addEventListener("input",()=>{const val=input.value.trim();if(val==="**"||/^\d{2}$/.test(val))input.blur();});
-            input.addEventListener("blur",()=>{
-              const val=input.value.trim();
-              if(val==="**"){gridData[r][c]={val,cn:null,close:null};}
-              else if(/^\d{2}$/.test(val)){
-                const cn=calculateCN(val);const close=calculateCloseCond(val);
-                gridData[r][c]={val,cn,close};
-              }else{gridData[r][c]=null;}
-              renderCellContent(td,r,c);saveChart();
-              let nextRow=r,nextCol=c+1;
-              if(nextCol>=COLS){nextCol=0;nextRow=r+1;}
-              if(nextRow<ROWS){tbody.rows[nextRow]?.cells[nextCol]?.click();}
+        /* Added: Calculate Digit Difference Total (Minus Total) */
+        function digitDiffTotal(num){
+            if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;
+            const a=parseInt(num[0]),b=parseInt(num[1]);
+            // (10 - B) + A, then modulo 10
+            return ((10 - b) + a) % 10;
+        }
+
+        /* New function to render cell content completely */
+        function renderCellContent(td, r, c) {
+            const cell = gridData[r] && gridData[r][c];
+            td.innerHTML = '';
+            if (!cell) return;
+
+            const { val, cn, close } = cell;
+
+            if (val === '**') {
+                td.innerHTML = `<span class="red number-value">**</span>`;
+                return;
+            }
+
+            const red = isRed(val);
+            const total = digitTotal(val);
+            const diffTotal = digitDiffTotal(val);
+
+            // 1. Top Corners (Total and Diff Total)
+            const leftCorner = `<span class="corner left">${total ?? ''}</span>`;
+            const rightCorner = `<span class="corner right">${diffTotal ?? ''}</span>`;
+
+            // 2. Middle Value (Main Number)
+            const middle = `<span class="${red ? 'red' : ''} number-value">${val}</span>`;
+
+            // 3. Bottom Condition (CN-Close)
+            const bottom = (cn !== null && close !== null) ?
+                           `<span class="conditions">${cn}-${close}</span>` :
+                           '';
+
+            // Combine all parts
+            td.innerHTML = leftCorner + rightCorner + middle + bottom;
+        }
+
+        function renderGrid(newRows, newCols) {
+            ROWS = newRows;
+            COLS = newCols;
+            tbody.innerHTML = "";
+
+            // Re-initialize or resize gridData to ensure it matches new dimensions
+            const newGridData = Array.from({ length: ROWS }, (_, r) =>
+                Array.from({ length: COLS }, (_, c) =>
+                    (gridData[r] && gridData[r][c]) ? gridData[r][c] : null
+                )
+            );
+            gridData = newGridData;
+
+            for (let r = 0; r < ROWS; r++) {
+                const tr = document.createElement("tr");
+                for (let c = 0; c < COLS; c++) {
+                    const td = document.createElement("td");
+                    td.addEventListener("click", () => {
+                        td.innerHTML = "";
+                        const input = document.createElement("input");
+                        input.type = "text";
+                        input.maxLength = 2;
+                        input.className = "cell-input";
+                        input.value = gridData[r][c]?.val || "";
+                        td.appendChild(input);
+                        input.focus();
+
+                        const handleInputAndBlur = () => {
+                            const val = input.value.trim();
+                            if (val === "**") {
+                                gridData[r][c] = { val, cn: null, close: null };
+                            } else if (/^\d{2}$/.test(val)) {
+                                const cn = calculateCN(val);
+                                const close = calculateCloseCond(val);
+                                gridData[r][c] = { val, cn, close };
+                            } else {
+                                gridData[r][c] = null;
+                            }
+
+                            renderCellContent(td, r, c);
+                            saveChart();
+
+                            let nextRow = r, nextCol = c + 1;
+                            if (nextCol >= COLS) { nextCol = 0; nextRow = r + 1; }
+                            if (nextRow < ROWS) {
+                                // Defer click to the next cell to allow for DOM update
+                                setTimeout(() => {
+                                    tbody.rows[nextRow]?.cells[nextCol]?.click();
+                                }, 10);
+                            }
+                        };
+
+                        // Auto-blur/process on valid input
+                        input.addEventListener("input", () => {
+                            const val = input.value.trim();
+                            if (val === "**" || /^\d{2}$/.test(val)) {
+                                // If valid, auto-process instead of relying on blur
+                                handleInputAndBlur();
+                            }
+                        });
+
+                        // Fallback/final processing on blur
+                        input.addEventListener("blur", handleInputAndBlur);
+
+                    }, { once: true }); // Use { once: true } to prevent multiple listeners
+
+                    renderCellContent(td, r, c); // Initial rendering
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+        }
+
+        function fillGridFromQuickInput() {
+            const quickInput = document.getElementById('quick-input').value.trim();
+            if (!quickInput) return;
+
+            const chunks = quickInput.split(/\s+/).map(chunk => chunk.trim());
+            let row = 0;
+            let col = 0;
+
+            chunks.forEach(chunk => {
+                if (row >= ROWS) return;
+
+                let val = null;
+                if (chunk === '*' || chunk === '**') {
+                    val = { val: '**', cn: null, close: null };
+                } else if (/^\d{2}$/.test(chunk)) {
+                    const cn = calculateCN(chunk);
+                    const close = calculateCloseCond(chunk);
+                    val = { val: chunk, cn, close };
+                }
+
+                if (val && col < COLS) {
+                    gridData[row][col] = val;
+                }
+
+                col++;
+                if (col >= COLS) {
+                    col = 0;
+                    row++;
+                }
             });
-          });
-          if(gridData[r]&&gridData[r][c])renderCellContent(td,r,c);
-          tr.appendChild(td);
+
+            renderGrid(ROWS, COLS);
+            saveChart();
+            document.getElementById('quick-input').value = '';
         }
-        tbody.appendChild(tr);
-      }
-    }
 
-    function fillGridFromQuickInput(){
-      const q=document.getElementById('quick-input').value.trim();if(!q)return;
-      const chunks=q.split(/\s+/).map(x=>x.trim());let row=0,col=0;
-      chunks.forEach(chunk=>{
-        if(row>=ROWS)return;
-        if(chunk==='*'||chunk==='**'){gridData[row][col]={val:'**',cn:null,close:null};}
-        else if(/^\d{2}$/.test(chunk)){
-          const cn=calculateCN(chunk);const close=calculateCloseCond(chunk);
-          gridData[row][col]={val:chunk,cn,close};
+        function resizeChart() {
+            const newRows = parseInt(document.getElementById('rowsModify').value) || ROWS;
+            const newCols = parseInt(document.getElementById('colsModify').value) || COLS;
+            if (newRows < 1 || newCols < 5 || newCols > 8) {
+                alert('Rows must be at least 1, and Columns must be between 5 and 8.');
+                return;
+            }
+
+            // Preserve existing data within new bounds
+            const newGridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
+            for (let r = 0; r < Math.min(ROWS, newRows); r++) {
+                for (let c = 0; c < Math.min(COLS, newCols); c++) {
+                    newGridData[r][c] = gridData[r][c];
+                }
+            }
+
+            gridData = newGridData;
+            ROWS = newRows;
+            COLS = newCols;
+            renderGrid(ROWS, COLS);
+            saveChart();
         }
-        col++;if(col>=COLS){col=0;row++;}
-      });
-      renderGrid(ROWS,COLS);saveChart();document.getElementById('quick-input').value='';
-    }
 
-    function resizeChart(){
-      const newRows=parseInt(document.getElementById('rowsModify').value)||ROWS;
-      const newCols=parseInt(document.getElementById('colsModify').value)||COLS;
-      if(newRows<1||newCols<1||newCols>10){alert('Invalid size');return;}
-      const newGrid=Array.from({length:newRows},()=>Array(newCols).fill(null));
-      for(let r=0;r<Math.min(ROWS,newRows);r++){
-        for(let c=0;c<Math.min(COLS,newCols);c++){
-          newGrid[r][c]=gridData[r][c];
+        function saveChart() {
+            if (!currentChartName) {
+                currentChartName = document.getElementById('chart-name-input').value || `Chart-${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+            }
+            const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
+            history[currentChartName] = {
+                rows: ROWS,
+                cols: COLS,
+                data: JSON.parse(JSON.stringify(gridData))
+            };
+            localStorage.setItem('chartHistory', JSON.stringify(history));
         }
-      }
-      gridData=newGrid;ROWS=newRows;COLS=newCols;renderGrid(ROWS,COLS);saveChart();
-    }
 
-    function saveChart(){
-      if(!currentChartName){
-        currentChartName=document.getElementById('chart-name-input').value||`Chart-${new Date().toLocaleTimeString()}`;
-      }
-      const history=JSON.parse(localStorage.getItem('chartHistory'))||{};
-      history[currentChartName]={rows:ROWS,cols:COLS,data:JSON.parse(JSON.stringify(gridData))};
-      localStorage.setItem('chartHistory',JSON.stringify(history));
-    }
+        function loadChart(label) {
+            const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
+            const savedChart = history[label];
+            if (!savedChart) return;
+            currentChartName = label;
+            ROWS = savedChart.rows;
+            COLS = savedChart.cols;
+            gridData = savedChart.data;
+            chartNameHeader.textContent = `Editing: ${currentChartName}`;
+            document.getElementById('initial-setup').classList.add('hidden');
+            document.getElementById('chart-main').classList.remove('hidden');
+            renderGrid(ROWS, COLS);
+            document.getElementById('rowsModify').value = ROWS;
+            document.getElementById('colsModify').value = COLS;
+        }
 
-    function clearGrid(){
-      gridData=Array.from({length:ROWS},()=>Array(COLS).fill(null));
-      renderGrid(ROWS,COLS);saveChart();
-    }
+        function clearGrid() {
+            gridData = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+            renderGrid(ROWS, COLS);
+            saveChart();
+        }
 
-    function newChart(){
-      document.getElementById('initial-setup').classList.remove('hidden');
-      document.getElementById('chart-main').classList.add('hidden');
-      document.getElementById('chart-name-input').value='';currentChartName=null;
-    }
+        function newChart() {
+            document.getElementById('initial-setup').classList.remove('hidden');
+            document.getElementById('chart-main').classList.add('hidden');
+            document.getElementById('chart-name-input').value = '';
+            currentChartName = null;
+        }
 
-    createBtn.addEventListener('click',()=>{
-      const name=document.getElementById('chart-name-input').value.trim();
-      const newRows=parseInt(document.getElementById('rowsInput').value)||ROWS;
-      const newCols=parseInt(document.getElementById('colsInput').value)||COLS;
-      if(!name){alert('Please enter chart name');return;}
-      currentChartName=name;
-      gridData=Array.from({length:newRows},()=>Array(newCols).fill(null));
-      chartNameHeader.textContent=`Editing: ${currentChartName}`;
-      document.getElementById('initial-setup').classList.add('hidden');
-      document.getElementById('chart-main').classList.remove('hidden');
-      renderGrid(newRows,newCols);saveChart();
-    });
+        createBtn.addEventListener('click', () => {
+            const name = document.getElementById('chart-name-input').value.trim();
+            const newRows = parseInt(document.getElementById('rowsInput').value);
+            const newCols = parseInt(document.getElementById('colsInput').value);
+            if (!name) {
+                alert('Please enter a chart name.');
+                return;
+            }
+            createBtn.disabled = true;
+            loadingSpinner.classList.remove('hidden');
+            setTimeout(() => {
+                currentChartName = name;
+                // Re-initialize gridData with the new size
+                gridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
 
-    saveBtn.addEventListener('click',()=>{saveChart();alert('Chart saved');});
-    document.getElementById('fill-grid-btn').addEventListener('click',fillGridFromQuickInput);
-    document.getElementById('resize-btn').addEventListener('click',resizeChart);
-    renderGrid(ROWS,COLS);
-  </script>
+                chartNameHeader.textContent = `Editing: ${currentChartName}`;
+                document.getElementById('initial-setup').classList.add('hidden');
+                document.getElementById('chart-main').classList.remove('hidden');
+                renderGrid(newRows, newCols);
+                saveChart();
+                createBtn.disabled = false;
+                loadingSpinner.classList.add('hidden');
+                document.getElementById('rowsModify').value = newRows;
+                document.getElementById('colsModify').value = newCols;
+            }, 500);
+        });
+
+        saveBtn.addEventListener('click', () => {
+            saveBtn.disabled = true;
+            saveSymbol.classList.remove('hidden');
+            saveBtn.classList.add('animate-pulse');
+            saveBtn.textContent = 'Saved!';
+            saveChart();
+            setTimeout(() => {
+                saveBtn.disabled = false;
+                saveSymbol.classList.add('hidden');
+                saveBtn.classList.remove('animate-pulse');
+                saveBtn.textContent = 'Save Chart';
+            }, 1000);
+        });
+
+        const fillGridBtn = document.getElementById('fill-grid-btn');
+        if (fillGridBtn) {
+            fillGridBtn.addEventListener('click', fillGridFromQuickInput);
+        }
+
+        const resizeBtn = document.getElementById('resize-btn');
+        if (resizeBtn) {
+            resizeBtn.addEventListener('click', resizeChart);
+        }
+
+        // Initial render logic
+        const chartToLoad = localStorage.getItem('chartToLoad');
+        if (chartToLoad) {
+            loadChart(chartToLoad);
+            localStorage.removeItem('chartToLoad');
+        } else {
+            // Initial render call with default size
+            renderGrid(ROWS, COLS);
+        }
+    </script>
 </body>
 </html>
-
-
