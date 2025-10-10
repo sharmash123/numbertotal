@@ -34,15 +34,15 @@
         /* Further Increased Cell Size */
         td {
             border: 2px solid #000;
-            width: 170px; /* Increased */
-            height: 170px; /* Increased */
+            width: 180px; /* Increased for spacing */
+            height: 180px; /* Increased for spacing */
             text-align: center;
             font-size: 30px;
             cursor: pointer;
             background-color: #ffffff;
             position: relative;
             vertical-align: middle;
-            padding: 8px;
+            padding: 10px; /* Increased padding */
             border-radius: 8px;
         }
         input.cell-input {
@@ -64,31 +64,31 @@
             font-weight: 800;
             display: block;
             line-height: 1.1;
-            margin-top: 10px;
+            margin-top: 5px; /* Adjusted spacing */
         }
 
-        /* Total and Diff Total (Corners) - INCREASED Size */
+        /* Total and Diff Total (Corners) - LARGE Size */
         .corner {
             position: absolute;
-            font-size: 2.0rem; /* Increased corner size */
+            font-size: 2.0rem; /* Kept at 2.0rem */
             font-weight: 900;
             line-height: 1;
         }
         .corner.left {
-            top: 10px;
-            left: 12px;
+            top: 12px; /* Adjusted padding */
+            left: 14px; /* Adjusted padding */
             color: #16a34a; /* Green for Total */
         }
         .corner.right {
-            top: 10px;
-            right: 12px;
+            top: 12px; /* Adjusted padding */
+            right: 14px; /* Adjusted padding */
             color: #dc2626; /* Red for Diff Total */
         }
 
-        /* Open/Close Condition (Bottom) - INCREASED Size */
+        /* Open/Close Condition (Bottom) - INCREASED to match corner size */
         .conditions {
             display: block;
-            font-size: 1.5rem; /* Increased condition size */
+            font-size: 2.0rem; /* Increased to 2.0rem to match corners */
             font-weight: 800;
             margin-top: 5px;
             line-height: 1.2;
@@ -101,8 +101,8 @@
         /* Responsive Design */
         @media (max-width: 1024px) { /* Tablet */
             td {
-                width: 140px; /* Adjusted */
-                height: 140px; /* Adjusted */
+                width: 150px; /* Adjusted */
+                height: 150px; /* Adjusted */
             }
             .number-value {
                 font-size: 40px;
@@ -111,14 +111,14 @@
                 font-size: 1.7rem;
             }
             .conditions {
-                font-size: 1.3rem;
+                font-size: 1.7rem;
             }
         }
         @media (max-width: 600px) { /* Mobile */
             td {
-                width: 120px; /* Adjusted */
-                height: 120px; /* Adjusted */
-                padding: 4px;
+                width: 130px; /* Adjusted */
+                height: 130px; /* Adjusted */
+                padding: 6px;
             }
             input.cell-input {
                 font-size: 32px;
@@ -130,7 +130,7 @@
                 font-size: 1.4rem;
             }
             .conditions {
-                font-size: 1.2rem;
+                font-size: 1.4rem;
             }
         }
     </style>
