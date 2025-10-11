@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Number-Cal: Pattern Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .pattern-results-container {
+            min-height: 200px;
+        }
+        /* Style for a matching pattern result item */
+        .match-item {
+            border-left: 5px solid #4f46e5; /* Indigo accent */
+            transition: transform 0.2s;
+        }
+        .match-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-poppins">
+    
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap">
+        <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number-Cal: Pattern Finder</h1>
+        <nav class="flex gap-4">
+            <a href="charts.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Chart Editor
+            </a>
+            <a href="info.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                View Tables
+            </a>
+            <a href="store.html" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                View Store
+            </a>
+        </nav>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <h2 id="chart-name-header" class="text-3xl font-extrabold text-center mb-6 text-gray-800">
+            Please select a chart from the Store
+        </h2>
+        
+        <div id="pattern-finder-ui" class="hidden">
+            <div class="pattern-finder flex flex-wrap justify-center items-center gap-4 mb-8 p-4 bg-indigo-100 rounded-xl shadow-lg">
+                <button id="find-pattern-btn" class="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-colors duration-300 font-bold text-lg shadow-md">
+                    Execute Diagonal 2-Step Pattern Search (N vs R+2, C+2)
+                </button>
+            </div>
+
+            <div id="pattern-results" class="pattern-results-container p-6 bg-white rounded-xl shadow-2xl border border-indigo-300">
+                <h3 class="text-2xl font-bold mb-4 text-center text-indigo-800">Pattern Analysis Results</h3>
+                <div id="pattern-list" class="space-y-4">
+                    <p class="text-center text-gray-500 font-semibold" id="pattern-initial-text">Click the button above to start the comprehensive search.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="no-chart-message" class="text-center p-10 bg-white rounded-xl shadow-lg mt-8">
+            <p class="text-xl text-red-500 font-semibold mb-4">No Chart Loaded.</p>
+            <p class="text-gray-600">
+                To use the Pattern Finder, first go to the 
+                <a href="store.html" class="text-yellow-600 font-bold hover:underline">View Store</a>,
+                select a chart, and click its **Analyze** button (you will need to modify the logic in `store.html` to include a link to this page).
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Global Constants and Data ---
+        const COLUMN_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Col 8'];
+        const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4};
+
+        let currentChartData = null; // Holds the loaded chart object
+
+        // --- Core Calculation Functions (Copied from charts.html) ---
+
+        function calculateCN(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0]), b = parseInt(num[1]);
+            const sum1 = a + b;
+            const sum2 = a + a;
+            return (sum1 + sum2) % 10;
+        }
+
+        function calculateCloseCond(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
+            const a = parseInt(num[0]), b = parseInt(num[1]);
+            return ((a + b) % 10 + (b + b) % 10) % 10;
+        }
+        
+        function digitTotal(num){
+            if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;
+            const a=parseInt(num[0]),b=parseInt(num[1]);
+            return (a+b)%10;
+        }
+
+        function digitDiffTotal(num){
+            if(!num||num.length!==2||!/^\d{2}$/.test(num))return null;
+            const a=parseInt(num[0]),b=parseInt(num[1]);
+            return ((10 - b) + a) % 10;
+        }
+        
+        // --- Pattern Finder Logic ---
+
+        /**
+         * Scans the loaded chart data for the specific N vs N+2 diagonal link pattern.
+         */
+        function findDiagonalPattern() {
+            if (!currentChartData) return;
+
+            const { rows: ROWS, cols: COLS, data: gridData } = currentChartData;
+            const patternList = document.getElementById('pattern-list');
+            patternList.innerHTML = '';
+            
+            // Clear any previous messages
+            const button = document.getElementById('find-pattern-btn');
+            button.disabled = true;
+            button.textContent = 'Searching...';
+
+            const matches = [];
+
+            // Pattern Search: N(r, c) vs N+2(r+2, c+2)
+            for (let r = 0; r < ROWS - 2; r++) {
+                for (let c = 0; c < COLS - 2; c++) {
+                    const entryN = gridData[r][c];
+                    const entryNPlusX = gridData[r + 2][c + 2];
+
+                    // 1. Check if both entries exist and are valid 2-digit numbers (not '**')
+                    if (entryN && entryN.val && /^\d{2}$/.test(entryN.val) &&
+                        entryNPlusX && entryNPlusX.val && /^\d{2}$/.test(entryNPlusX.val)) {
+
+                        // N's properties (Open/Close conditions)
+                        const n_cn = entryN.cn; // Pre-calculated on input
+                        const n_close = entryN.close; // Pre-calculated on input
+                        
+                        // N+2's properties (Total/Diff Total)
+                        const nx_total = digitTotal(entryNPlusX.val);
+                        const nx_diffTotal = digitDiffTotal(entryNPlusX.val);
+
+                        // 2. Check the specific pattern condition: N's CN/Close == N+2's Total/Diff
+                        if (n_cn === nx_total && n_close === nx_diffTotal) {
+                            const N_info = {
+                                row: r + 1,
+                                colName: COLUMN_HEADERS[c] || `Col ${c+1}`,
+                                val: entryN.val,
+                                cn: n_cn,
+                                close: n_close
+                            };
+                            const NX_info = {
+                                row: r + 3, // r+2 + 1
+                                colName: COLUMN_HEADERS[c + 2] || `Col ${c+3}`,
+                                val: entryNPlusX.val,
+                                total: nx_total,
+                                diffTotal: nx_diffTotal
+                            };
+                            matches.push({ N: N_info, NX: NX_info });
+                        }
+                    }
+                }
+            }
+            
+            // Display Results
+            setTimeout(() => { // Use a slight timeout to allow "Searching..." to display
+                if (matches.length === 0) {
+                    patternList.innerHTML = '<p class="text-center text-red-600 font-bold text-lg">❌ No diagonal N vs N+2 patterns found in this chart.</p>';
+                } else {
+                    patternList.innerHTML = `<p class="text-center font-extrabold text-2xl text-green-700 mb-6">🎉 ${matches.length} Matching Patterns Found!</p>`;
+                    
+                    matches.forEach(match => {
+                        const item = document.createElement('div');
+                        item.className = 'match-item p-4 border border-gray-200 rounded-xl bg-white shadow-md hover:bg-gray-50';
+                        item.innerHTML = `
+                            <p class="font-bold text-lg text-indigo-700">Match:</p>
+                            <p class="text-gray-700 mb-1">
+                                <span class="font-semibold text-green-600">${match.N.val}</span> 
+                                at Row ${match.N.row}, ${match.N.colName} 
+                                (CN-Close: <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${match.N.cn}-${match.N.close}</span>)
+                            </p>
+                            <p class="text-gray-700">
+                                <span class="font-semibold text-green-600">${match.NX.val}</span> 
+                                at Row ${match.NX.row}, ${match.NX.colName} 
+                                (Total/Diff: <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${match.NX.total}/${match.NX.diffTotal}</span>)
+                            </p>
+                            <p class="text-xs text-indigo-500 mt-2 font-medium">
+                                Condition Met: ${match.N.cn} = ${match.NX.total} AND ${match.N.close} = ${match.NX.diffTotal}
+                            </p>
+                        `;
+                        patternList.appendChild(item);
+                    });
+                }
+                button.textContent = 'Execute Diagonal 2-Step Pattern Search (N vs R+2, C+2)';
+                button.disabled = false;
+            }, 300); // Small delay for visual feedback
+        }
+
+        // --- Chart Loading and Initialization ---
+
+        function loadChartForAnalysis(label) {
+            const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
+            const savedChart = history[label];
+            
+            document.getElementById('no-chart-message').classList.add('hidden');
+            document.getElementById('pattern-finder-ui').classList.remove('hidden');
+
+            if (!savedChart) {
+                document.getElementById('chart-name-header').textContent = `Error: Chart "${label}" not found.`;
+                document.getElementById('pattern-finder-ui').classList.add('hidden');
+                document.getElementById('no-chart-message').classList.remove('hidden');
+                return;
+            }
+
+            currentChartData = savedChart;
+            document.getElementById('chart-name-header').textContent = `Analyzing Chart: ${label}`;
+
+            // Attach listener after chart is loaded
+            const findPatternBtn = document.getElementById('find-pattern-btn');
+            findPatternBtn.addEventListener('click', findDiagonalPattern);
+        }
+
+        // Initialization on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartToLoad = localStorage.getItem('chartToLoadForAnalysis');
+            
+            if (chartToLoad) {
+                loadChartForAnalysis(chartToLoad);
+                // Clear the temporary storage key after use
+                localStorage.removeItem('chartToLoadForAnalysis'); 
+            } else {
+                // If no chart is set, the default "no-chart-message" will be visible.
+            }
+        });
+    </script>
+</body>
+</html>
