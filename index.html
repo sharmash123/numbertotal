@@ -28,22 +28,42 @@
             border-collapse: collapse;
             margin: 0 auto;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            min-width: 400px;
+            min-width: 500px;
         }
 
         /* Further Increased Cell Size */
-        td {
+        td, th {
             border: 2px solid #000;
-            width: 180px; /* Increased for spacing */
-            height: 180px; /* Increased for spacing */
             text-align: center;
             font-size: 30px;
-            cursor: pointer;
             background-color: #ffffff;
             position: relative;
             vertical-align: middle;
             padding: 10px; /* Increased padding */
             border-radius: 8px;
+        }
+        td {
+            width: 180px; /* Increased for spacing */
+            height: 180px; /* Increased for spacing */
+            cursor: pointer;
+        }
+        th.row-number {
+            width: 60px;
+            height: 180px;
+            font-size: 24px;
+            background-color: #f3f4f6;
+        }
+        th.col-header {
+            width: 180px;
+            height: 40px;
+            font-size: 20px;
+            background-color: #f3f4f6;
+        }
+        th.empty-corner {
+            width: 60px;
+            height: 40px;
+            border: none;
+            background-color: transparent;
         }
         input.cell-input {
             width: 100%;
@@ -104,6 +124,16 @@
                 width: 150px; /* Adjusted */
                 height: 150px; /* Adjusted */
             }
+            th.row-number {
+                width: 50px;
+                height: 150px;
+                font-size: 20px;
+            }
+            th.col-header {
+                width: 150px;
+                height: 35px;
+                font-size: 18px;
+            }
             .number-value {
                 font-size: 40px;
             }
@@ -119,6 +149,16 @@
                 width: 130px; /* Adjusted */
                 height: 130px; /* Adjusted */
                 padding: 6px;
+            }
+            th.row-number {
+                width: 45px;
+                height: 130px;
+                font-size: 18px;
+            }
+            th.col-header {
+                width: 130px;
+                height: 30px;
+                font-size: 16px;
             }
             input.cell-input {
                 font-size: 32px;
@@ -188,22 +228,21 @@
         </div>
         <div class="table-container">
             <table id="grid">
-                <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
         const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4};
+        const MAX_COLS = 8;
         let ROWS = 2000;
         let COLS = 7;
-        const tbody = document.querySelector("#grid tbody");
         const chartNameHeader = document.querySelector("#chart-main h2");
         const createBtn = document.getElementById('create-chart-btn');
         const loadingSpinner = document.getElementById('loading-spinner');
         const saveBtn = document.getElementById('save-btn');
         const saveSymbol = document.getElementById('save-symbol');
-        let gridData = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+        let gridData = Array.from({ length: ROWS }, () => Array(MAX_COLS).fill(null));
         let currentChartName = null;
 
         function calculateCN(num) {
@@ -270,20 +309,64 @@
             td.innerHTML = leftCorner + rightCorner + middle + bottom;
         }
 
+        function getCurrentTbody() {
+            return document.querySelector("#grid tbody");
+        }
+
         function renderGrid(newRows, newCols) {
             ROWS = newRows;
             COLS = newCols;
-            tbody.innerHTML = "";
+            const table = document.getElementById('grid');
+            table.innerHTML = "";
 
+            // Prepare column headers
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            let headers = days.slice(0, Math.min(COLS, 7));
+            if (COLS > 7) {
+                for (let i = 7; i < COLS; i++) {
+                    headers.push(`Col ${i+1}`);
+                }
+            }
+
+            // Create thead for column headers
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            // Empty th for row numbers alignment
+            const emptyTh = document.createElement('th');
+            emptyTh.className = 'empty-corner';
+            emptyTh.textContent = '';
+            headerRow.appendChild(emptyTh);
+
+            // Day headers
+            headers.forEach(day => {
+                const th = document.createElement('th');
+                th.className = 'col-header';
+                th.textContent = day;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Adjust gridData for new size if needed, but since we always keep MAX_COLS, just ensure rows
             const newGridData = Array.from({ length: ROWS }, (_, r) =>
-                Array.from({ length: COLS }, (_, c) =>
+                Array.from({ length: MAX_COLS }, (_, c) =>
                     (gridData[r] && gridData[r][c]) ? gridData[r][c] : null
                 )
             );
             gridData = newGridData;
 
+            // Create tbody
+            const tbody = document.createElement('tbody');
             for (let r = 0; r < ROWS; r++) {
                 const tr = document.createElement("tr");
+
+                // Row number th
+                const rowTh = document.createElement('th');
+                rowTh.className = 'row-number';
+                rowTh.textContent = (r + 1).toString();
+                tr.appendChild(rowTh);
+
                 for (let c = 0; c < COLS; c++) {
                     const td = document.createElement("td");
                     
@@ -332,7 +415,11 @@
                                 if (nextCol >= COLS) { nextCol = 0; nextRow = r + 1; }
                                 if (nextRow < ROWS) {
                                     setTimeout(() => {
-                                        tbody.rows[nextRow]?.cells[nextCol]?.click();
+                                        const currentTbody = getCurrentTbody();
+                                        if (currentTbody && currentTbody.rows[nextRow]) {
+                                            const nextCell = currentTbody.rows[nextRow].cells[nextCol + 1]; // +1 for row number th
+                                            if (nextCell) nextCell.click();
+                                        }
                                     }, 10);
                                 }
                             }
@@ -350,6 +437,7 @@
                 }
                 tbody.appendChild(tr);
             }
+            table.appendChild(tbody);
         }
 
         function fillGridFromQuickInput() {
@@ -396,9 +484,9 @@
                 return;
             }
 
-            const newGridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
+            const newGridData = Array.from({ length: newRows }, () => Array(MAX_COLS).fill(null));
             for (let r = 0; r < Math.min(ROWS, newRows); r++) {
-                for (let c = 0; c < Math.min(COLS, newCols); c++) {
+                for (let c = 0; c < MAX_COLS; c++) {
                     newGridData[r][c] = gridData[r][c];
                 }
             }
@@ -408,6 +496,9 @@
             COLS = newCols;
             renderGrid(ROWS, COLS);
             saveChart();
+            // Update the input fields to reflect new values
+            document.getElementById('rowsModify').value = newRows;
+            document.getElementById('colsModify').value = newCols;
         }
 
         function saveChart() {
@@ -440,7 +531,7 @@
         }
 
         function clearGrid() {
-            gridData = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+            gridData = Array.from({ length: ROWS }, () => Array(MAX_COLS).fill(null));
             renderGrid(ROWS, COLS);
             saveChart();
         }
@@ -464,7 +555,7 @@
             loadingSpinner.classList.remove('hidden');
             setTimeout(() => {
                 currentChartName = name;
-                gridData = Array.from({ length: newRows }, () => Array(newCols).fill(null));
+                gridData = Array.from({ length: newRows }, () => Array(MAX_COLS).fill(null));
 
                 chartNameHeader.textContent = `Editing: ${currentChartName}`;
                 document.getElementById('initial-setup').classList.add('hidden');
@@ -507,7 +598,7 @@
             loadChart(chartToLoad);
             localStorage.removeItem('chartToLoad');
         } else {
-            renderGrid(ROWS, COLS);
+            // Initially, chart-main is hidden, so no need to render yet
         }
     </script>
 </body>
