@@ -5,9 +5,68 @@
     <title>Number-Cal: Pattern Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css"> 
-
+    
     <style>
+        /* --- Styles from style.css --- */
+        /* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap'); - Redundant with link tag */
+        
+        /* Main Body and General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+            /* Background pattern from style.css */
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.15' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* --- Header/Nav (mostly from style.css) --- */
+        header {
+            background-color: #1f2937;
+            color: #ffffff;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Reusable Classes from style.css (for completeness) */
+        .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            font-size: 0.8em;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+        .bg-blue-600 { background-color: #2563eb; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .bg-yellow-500 { background-color: #f59e0b; }
+        .hover\:bg-yellow-600:hover { background-color: #d97706; }
+        .bg-green-500 { background-color: #10b981; }
+        .hover\:bg-green-600:hover { background-color: #059669; }
+        .bg-red-500 { background-color: #ef4444; }
+        .hover\:bg-red-600:hover { background-color: #dc2626; }
+        .grid-container-wrapper {
+            overflow-x: auto;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        /* End of style.css content */
+
+        /* --- Page-specific Inline Styles from Original HTML --- */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f3f4f6;
@@ -106,7 +165,7 @@
 
                     <label class="flex items-start space-x-2 font-semibold text-base text-purple-700 cursor-pointer p-2 border rounded-lg hover:bg-purple-50">
                         <input type="radio" name="pattern-type" value="pattern2" id="radio-pattern2" class="mt-1 h-5 w-5 text-purple-600 focus:ring-purple-500">
-                         <div class="flex flex-col">
+                            <div class="flex flex-col">
                             <span><span class="font-extrabold">OPEN-CLOSE FINDING</span></span>
                             <span class="text-xs text-gray-500">Row/Col sequence match with Const Pairs.</span>
                         </div>
@@ -147,7 +206,7 @@
             
             <div class="pattern-finder flex flex-wrap justify-center items-center gap-4 mb-8 p-4 bg-indigo-100 rounded-xl shadow-lg">
                 <button id="find-pattern-btn" class="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-colors duration-300 font-bold text-lg shadow-md">
-                    Execute Pattern Search
+                    Execute Diagonal 2-Step Pattern Search (N vs R+2, C+2)
                 </button>
             </div>
 
@@ -162,7 +221,7 @@
         <div id="no-chart-message" class="text-center p-10 bg-white rounded-xl shadow-lg mt-8">
             <p class="text-xl text-red-500 font-semibold mb-4">No Chart Loaded.</p>
             <p class="text-gray-600">
-                To use the Pattern Finder, first go to the 
+                To use the Pattern Finder, first go to the
                 <a href="store.html" class="text-yellow-600 font-bold hover:underline">View Store</a>,
                 select a chart, and click its **Analyze** button.
             </p>
@@ -178,7 +237,7 @@
 
         let currentChartData = null; 
 
-        // --- Core Calculation Functions (Unchanged) ---
+        // --- Core Calculation Functions ---
         function calculateCN(num) {
             if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
             const a = parseInt(num[0]), b = parseInt(num[1]);
@@ -206,10 +265,9 @@
         function getOpenDigit(num) { return parseInt(num[0]); }
         function getCloseDigit(num) { return parseInt(num[1]); }
 
-        // --- Pattern 1 Logic: DIAGONAL CN TO T|D (Unchanged) ---
+        // --- Pattern 1 Logic: DIAGONAL CN TO T|D ---
         
         function runDiagonalPatternSearch() {
-            // ... (Pattern 1 logic remains unchanged)
             const { rows: ROWS, cols: COLS, data: gridData } = currentChartData;
             const selectedColumns = getSelectedColumns();
             const patternList = document.getElementById('pattern-list');
@@ -290,7 +348,7 @@
             }
         }
         
-        // --- Pattern 2 Logic: OPEN-CLOSE FINDING (Updated for Dynamic Range) ---
+        // --- Pattern 2 Logic: OPEN-CLOSE FINDING ---
 
         /**
          * Checks if SeqA matches SeqB, or if SeqA matches the Pair of SeqB.
@@ -404,11 +462,10 @@
                         const maxStartRForRange = R_end_idx - length + 1;
                         
                         // Determine the final upper bound for the starting row index 'r'
-                        const finalEndR = Math.min(ROWS - length - 1, maxStartRForRange); 
+                        const finalEndR = Math.min(ROWS - length, maxStartRForRange); // Fixed logic: ROWS - length is max 0-based index
                         
-                        // Note: If length is 3 and range is 450-470 (21 rows), maxStartRForRange = 470 - 3 + 1 = 468.
-                        // The loop should run from r = 449 (450-1) up to 468.
-
+                        // Note: finalEndR logic was slightly off in the original code, adjusted to `ROWS - length` for the max start index.
+                        
                         if (finalStartR <= finalEndR) { // Only run if a sequence of this length can fit in the range
                             for (let r = finalStartR; r <= finalEndR; r++) { 
                                 const seq = extractSequence(type, 'col', r, c, length, gridData);
@@ -495,7 +552,7 @@
             }
         }
 
-        // --- UI Setup and Control (Modified) ---
+        // --- UI Setup and Control ---
 
         function getSelectedPattern() {
             const patternRadios = document.querySelectorAll('input[name="pattern-type"]:checked');
