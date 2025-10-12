@@ -31,123 +31,195 @@
             from { transform: translateY(-100%); }
             to { transform: translateY(0); }
         }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .chart-item {
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s ease;
+            transform: translateZ(0);
         }
         .chart-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02) translateZ(0);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(145deg, #f3f4f6, #ffffff);
+        }
+        .chart-label {
+            color: #1e40af;
+            font-size: 1.5rem;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        /* Style for the chart label when used as a button/link */
+        .chart-label-link {
+            font-size: 1.5rem; 
+            font-weight: 700;
+            color: #2563eb; /* Blue 600 */
+            transition: all 0.3s ease;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .chart-label-link:hover {
+            color: #3b82f6; /* Blue 500 */
+            text-decoration: underline;
+        }
+
+        button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        #delete-all-btn {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+        #delete-all-btn:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        .bg-red-500:hover {
+            background-color: #dc2626;
+        }
+        .no-charts {
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+            font-size: 1.2rem;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            .chart-item {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .chart-label-link {
+                font-size: 1.2rem;
+            }
+            button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
-<body class="font-poppins">
-    
-    <header class="text-white p-4 flex justify-between items-center flex-wrap">
-        <h1 class="text-2xl font-bold">Number-Cal: Chart Store</h1>
+<body class="bg-gray-100 font-poppins store-body">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap">
+        <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number-Cal: Store</h1>
         <nav class="flex gap-4">
-            <a href="charts.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+            <a href="home.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Home
+            </a>
+            <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
                 Chart Editor
             </a>
-            <a href="info.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+            <a href="pattern.html" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Pattern Finder
+            </a>
+            <a href="info.html" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
                 View Tables
             </a>
-            <a href="pattern.html" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
-                Pattern Finder
+            <a href="link.html" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
+                Link page
             </a>
         </nav>
     </header>
-
-    <div class="store-body container mx-auto p-4 md:p-8">
-        <h2 class="text-4xl font-extrabold text-center mb-10 text-white">
-            <span class="inline-block bg-yellow-500 text-gray-800 px-4 py-2 rounded-xl shadow-lg transform rotate-[-2deg]">
-                Your Saved Charts
-            </span>
-        </h2>
-
-        <div class="flex justify-end mb-6">
-            <button id="deleteAllBtn" class="bg-red-700 text-white py-2 px-4 rounded-lg hover:bg-red-800 transition-colors duration-300 font-semibold shadow-md">
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-semibold text-white">Your Saved Charts</h2>
+            <button id="delete-all-btn" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition-colors duration-300">
                 Delete All Charts
             </button>
         </div>
-
-        <div id="chart-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <p id="no-charts-message" class="col-span-full text-center text-xl text-white opacity-80 p-8 border border-white/20 rounded-xl bg-black/10 shadow-inner hidden">
-                You haven't saved any charts yet. Go to the Chart Editor to create one!
-            </p>
-        </div>
+        <div id="chart-list" class="space-y-4">
+            </div>
     </div>
-
     <script>
         const chartList = document.getElementById('chart-list');
-        const noChartsMessage = document.getElementById('no-charts-message');
-        const deleteAllBtn = document.getElementById('deleteAllBtn');
-
-        // Function to handle click on "Edit" (or view)
-        function loadChart(label) {
-            // Save the selected chart label to localStorage for charts.html to pick up
-            localStorage.setItem('chartToLoad', label); 
-            window.location.href = 'charts.html'; 
-        }
-
-        // Function to handle click on "Analyze" (or link to pattern.html)
-        function analyzeChart(label) {
-            // Save the selected chart label to localStorage for pattern.html to pick up
-            localStorage.setItem('chartToLoadForAnalysis', label); 
-            window.location.href = 'pattern.html'; 
-        }
-
+        const deleteAllBtn = document.getElementById('delete-all-btn');
+        
         function renderChartList() {
+            chartList.innerHTML = '';
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
-            const labels = Object.keys(history).sort(); // Sort by label alphabetically
-            
-            chartList.innerHTML = ''; // Clear previous list
+            const chartLabels = Object.keys(history).sort();
 
-            if (labels.length === 0) {
-                noChartsMessage.classList.remove('hidden');
+            if (chartLabels.length === 0) {
+                chartList.innerHTML = `<p class="no-charts">No charts saved yet. Go to the Charts page to create one!</p>`;
                 deleteAllBtn.classList.add('hidden');
                 return;
             }
 
-            noChartsMessage.classList.add('hidden');
             deleteAllBtn.classList.remove('hidden');
-
-            labels.forEach(label => {
-                const chartData = history[label];
+            chartLabels.forEach(label => {
                 const chartItem = document.createElement('div');
-                chartItem.className = 'chart-item p-6 bg-white rounded-xl shadow-xl flex flex-col space-y-4';
-                chartItem.onclick = () => loadChart(label); // Make the entire card clickable to load/edit
-
-                chartItem.innerHTML = `
-                    <h3 class="text-xl font-bold text-gray-900">${label}</h3>
-                    <p class="text-sm text-gray-600">Rows: ${chartData.rows}, Columns: ${chartData.cols}</p>
-                    <div class="flex gap-3 mt-auto">
-                        <button class="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition-colors duration-300" onclick="event.stopPropagation(); loadChart('${label}')">
-                            Edit/View
-                        </button>
-                        <button class="bg-indigo-500 text-white py-1 px-3 rounded hover:bg-indigo-600 transition-colors duration-300 font-semibold" onclick="event.stopPropagation(); analyzeChart('${label}')">
-                            Analyze Pattern
-                        </button>
-                    </div>
-                `;
+                chartItem.className = 'chart-item animate-fadeIn';
+                chartItem.style.animationDelay = `${chartLabels.indexOf(label) * 0.1}s`;
                 
+                // 1. Chart Label/Edit Link (for opening in index.html) - Text only as requested
+                const chartLabelLink = document.createElement('button');
+                chartLabelLink.className = 'chart-label-link text-left'; // Custom class for styling
+                chartLabelLink.textContent = label;
+                chartLabelLink.onclick = () => {
+                    localStorage.setItem('chartToLoad', label);
+                    window.location.href = 'index.html'; // Navigate to the Chart Editor
+                };
+                
+                // 2. Analyze Button (for opening in pattern.html)
+                const analyzeButton = document.createElement('button');
+                analyzeButton.className = 'bg-indigo-600 text-white py-1 px-3 rounded hover:bg-indigo-700 transition-colors duration-300';
+                analyzeButton.textContent = 'Analyze';
+                analyzeButton.onclick = (e) => {
+                    e.stopPropagation();
+                    localStorage.setItem('chartToLoadForAnalysis', label); // Key used by pattern.html
+                    window.location.href = 'pattern.html'; // Navigate to the Pattern Finder
+                };
+                
+                // 3. Delete Button
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 transition-colors duration-300';
                 deleteButton.textContent = 'Delete';
                 deleteButton.onclick = (e) => {
                     e.stopPropagation();
-                    const confirmDelete = confirm(`Are you sure you want to delete the chart \"${label}\"?`);
+                    const confirmDelete = confirm(`Are you sure you want to delete the chart "${label}"?`);
                     if (confirmDelete) {
                         deleteChart(label);
                     }
                 };
-
-                // Inject Delete button into the card's action buttons div
-                const actionDiv = chartItem.querySelector('.flex.gap-3.mt-auto');
-                if(actionDiv) {
-                     actionDiv.appendChild(deleteButton);
-                }
                 
+                // Group Analyze and Delete buttons
+                const actionContainer = document.createElement('div');
+                actionContainer.className = 'flex items-center gap-2';
+                actionContainer.appendChild(analyzeButton);
+                actionContainer.appendChild(deleteButton);
+
+
+                chartItem.appendChild(chartLabelLink);
+                chartItem.appendChild(actionContainer);
                 chartList.appendChild(chartItem);
             });
         }
