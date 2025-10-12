@@ -5,7 +5,7 @@
     <title>Number-Cal: Pattern Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
 
     <style>
         body {
@@ -18,14 +18,34 @@
         .pattern-results-container {
             min-height: 200px;
         }
-        /* Style for a matching pattern result item */
         .match-item {
-            border-left: 5px solid #4f46e5; /* Indigo accent */
+            border-left: 5px solid #4f46e5;
             transition: transform 0.2s;
         }
         .match-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* Custom styling for inputs */
+        .row-input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .row-input-group label {
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        .row-input-group input {
+            width: 100px;
+            padding: 8px;
+            border: 2px solid #a5b4fc;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -53,16 +73,88 @@
         </h2>
         
         <div id="pattern-finder-ui" class="hidden">
+            
+            <div id="day-selection-section" class="day-selection-controls mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-200 hidden">
+                <h4 class="text-xl font-bold mb-3 text-indigo-700">1. Select Columns for Search Start (Pattern 1: N):</h4>
+                <div class="flex flex-col md:flex-row gap-6 mb-4">
+                    <label class="flex items-center space-x-2 font-semibold text-lg text-indigo-700 cursor-pointer">
+                        <input type="radio" name="day-selection-type" value="all" checked id="radio-all-days" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500">
+                        <span>Search All Days (N vs N+2)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 font-semibold text-lg text-green-700 cursor-pointer">
+                        <input type="radio" name="day-selection-type" value="specific" id="radio-specific-days" class="h-5 w-5 text-green-600 focus:ring-green-500">
+                        <span>Select Specific Starting Day(s) (N)</span>
+                    </label>
+                </div>
+                
+                <div id="specific-day-checkboxes" class="grid grid-cols-4 sm:grid-cols-8 gap-4 mt-3 p-3 bg-gray-50 border rounded-lg hidden">
+                    </div>
+            </div>
+
+            <div class="pattern-selection-controls mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-200">
+                <h4 class="text-xl font-bold mb-3 text-red-700">2. Select Pattern Type:</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <label class="flex items-start space-x-2 font-semibold text-base text-red-700 cursor-pointer p-2 border rounded-lg hover:bg-red-50">
+                        <input type="radio" name="pattern-type" value="pattern1" checked id="radio-pattern1" class="mt-1 h-5 w-5 text-red-600 focus:ring-red-500">
+                        <div class="flex flex-col">
+                            <span><span class="font-extrabold">DIAGONAL CN TO T|D</span></span>
+                            <span class="text-xs text-gray-500">A: CN(N) = Total(N+2)</span>
+                            <span class="text-xs text-gray-500">B: CloseCond(N) = DiffTotal(N+2)</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start space-x-2 font-semibold text-base text-purple-700 cursor-pointer p-2 border rounded-lg hover:bg-purple-50">
+                        <input type="radio" name="pattern-type" value="pattern2" id="radio-pattern2" class="mt-1 h-5 w-5 text-purple-600 focus:ring-purple-500">
+                         <div class="flex flex-col">
+                            <span><span class="font-extrabold">OPEN-CLOSE FINDING</span></span>
+                            <span class="text-xs text-gray-500">Row/Col sequence match with Const Pairs.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="sequence-controls" class="hidden mb-6 p-4 bg-purple-100 rounded-xl shadow-lg border border-purple-300">
+                <h4 class="text-xl font-bold mb-3 text-purple-700">3. Sequence Match Parameters (OPEN-CLOSE FINDING):</h4>
+                
+                <div class="flex flex-wrap items-center gap-6 mb-4 p-3 bg-white rounded-lg border border-purple-200">
+                    <p class="text-lg font-bold text-gray-800">Set Search Range:</p>
+                    <div class="row-input-group">
+                        <label for="start-row-input">Start Row (R1):</label>
+                        <input type="number" id="start-row-input" value="1" min="1" class="shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                    <div class="row-input-group">
+                        <label for="end-row-input">End Row (R2):</label>
+                        <input type="number" id="end-row-input" value="20" min="1" class="shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-6">
+                    <p class="text-sm text-gray-700 font-semibold w-full">
+                        **Search Mode: Automated, Constrained & Cross-Checking** 🚀
+                    </p>
+                    <ul class="list-disc list-inside text-sm text-purple-700 font-medium ml-4 w-full">
+                        <li>**Scope:** All sequences must be **entirely contained** within the **Start Row** and **End Row** range.</li>
+                        <li>**Constraint:** Sequence B must start on a **later row** than Sequence A ($R_B > R_A$).</li>
+                        <li>**Types:** Automatically compares all combinations: **Open vs Open, Close vs Close, Open vs Close, and Close vs Open**.</li>
+                        <li>**Lengths:** Checks all starting points for lengths **3, 4, and 5**.</li>
+                    </ul>
+                </div>
+                <p class="text-xs text-purple-500 mt-4 font-medium">
+                    This search compares one sequence ($A_1, A_2, \dots$) against another ($B_1, B_2, \dots$) for a match where $A_i = B_i$ or $A_i = \text{Pair}(B_i)$.
+                </p>
+            </div>
+            
             <div class="pattern-finder flex flex-wrap justify-center items-center gap-4 mb-8 p-4 bg-indigo-100 rounded-xl shadow-lg">
                 <button id="find-pattern-btn" class="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-colors duration-300 font-bold text-lg shadow-md">
-                    Execute Diagonal 2-Step Pattern Search (N vs R+2, C+2)
+                    Execute Pattern Search
                 </button>
             </div>
 
             <div id="pattern-results" class="pattern-results-container p-6 bg-white rounded-xl shadow-2xl border border-indigo-300">
                 <h3 class="text-2xl font-bold mb-4 text-center text-indigo-800">Pattern Analysis Results</h3>
                 <div id="pattern-list" class="space-y-4">
-                    <p class="text-center text-gray-500 font-semibold" id="pattern-initial-text">Click the button above to start the comprehensive search.</p>
+                    <p class="text-center text-gray-500 font-semibold" id="pattern-initial-text">Select a pattern and click the button above to start the comprehensive search.</p>
                 </div>
             </div>
         </div>
@@ -72,7 +164,7 @@
             <p class="text-gray-600">
                 To use the Pattern Finder, first go to the 
                 <a href="store.html" class="text-yellow-600 font-bold hover:underline">View Store</a>,
-                select a chart, and click its **Analyze** button (you will need to modify the logic in `store.html` to include a link to this page).
+                select a chart, and click its **Analyze** button.
             </p>
         </div>
 
@@ -81,18 +173,16 @@
     <script>
         // --- Global Constants and Data ---
         const COLUMN_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Col 8'];
-        const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4};
+        // Const Pairs: 0-5, 1-6, 2-7, 3-8, 4-9
+        const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4}; 
 
-        let currentChartData = null; // Holds the loaded chart object
+        let currentChartData = null; 
 
-        // --- Core Calculation Functions (Copied from charts.html) ---
-
+        // --- Core Calculation Functions (Unchanged) ---
         function calculateCN(num) {
             if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return null;
             const a = parseInt(num[0]), b = parseInt(num[1]);
-            const sum1 = a + b;
-            const sum2 = a + a;
-            return (sum1 + sum2) % 10;
+            return ((a + b) + (a + a)) % 10;
         }
 
         function calculateCloseCond(num) {
@@ -112,101 +202,408 @@
             const a=parseInt(num[0]),b=parseInt(num[1]);
             return ((10 - b) + a) % 10;
         }
+
+        function getOpenDigit(num) { return parseInt(num[0]); }
+        function getCloseDigit(num) { return parseInt(num[1]); }
+
+        // --- Pattern 1 Logic: DIAGONAL CN TO T|D (Unchanged) ---
         
-        // --- Pattern Finder Logic ---
-
-        /**
-         * Scans the loaded chart data for the specific N vs N+2 diagonal link pattern.
-         */
-        function findDiagonalPattern() {
-            if (!currentChartData) return;
-
+        function runDiagonalPatternSearch() {
+            // ... (Pattern 1 logic remains unchanged)
             const { rows: ROWS, cols: COLS, data: gridData } = currentChartData;
+            const selectedColumns = getSelectedColumns();
             const patternList = document.getElementById('pattern-list');
             patternList.innerHTML = '';
             
-            // Clear any previous messages
             const button = document.getElementById('find-pattern-btn');
             button.disabled = true;
             button.textContent = 'Searching...';
 
             const matches = [];
 
-            // Pattern Search: N(r, c) vs N+2(r+2, c+2)
             for (let r = 0; r < ROWS - 2; r++) {
-                for (let c = 0; c < COLS - 2; c++) {
+                for (const c of selectedColumns) {
+                    if (c + 2 >= COLS) continue; 
+                    
                     const entryN = gridData[r][c];
                     const entryNPlusX = gridData[r + 2][c + 2];
 
-                    // 1. Check if both entries exist and are valid 2-digit numbers (not '**')
                     if (entryN && entryN.val && /^\d{2}$/.test(entryN.val) &&
                         entryNPlusX && entryNPlusX.val && /^\d{2}$/.test(entryNPlusX.val)) {
 
-                        // N's properties (Open/Close conditions)
-                        const n_cn = entryN.cn; // Pre-calculated on input
-                        const n_close = entryN.close; // Pre-calculated on input
+                        const n_cn = calculateCN(entryN.val);
+                        const n_close = calculateCloseCond(entryN.val); 
                         
-                        // N+2's properties (Total/Diff Total)
                         const nx_total = digitTotal(entryNPlusX.val);
                         const nx_diffTotal = digitDiffTotal(entryNPlusX.val);
 
-                        // 2. Check the specific pattern condition: N's CN/Close == N+2's Total/Diff
                         if (n_cn === nx_total && n_close === nx_diffTotal) {
                             const N_info = {
-                                row: r + 1,
-                                colName: COLUMN_HEADERS[c] || `Col ${c+1}`,
-                                val: entryN.val,
-                                cn: n_cn,
-                                close: n_close
+                                row: r + 1, colName: COLUMN_HEADERS[c] || `Col ${c+1}`, val: entryN.val, cn: n_cn, close: n_close
                             };
                             const NX_info = {
-                                row: r + 3, // r+2 + 1
-                                colName: COLUMN_HEADERS[c + 2] || `Col ${c+3}`,
-                                val: entryNPlusX.val,
-                                total: nx_total,
-                                diffTotal: nx_diffTotal
+                                row: r + 3, colName: COLUMN_HEADERS[c + 2] || `Col ${c+3}`, val: entryNPlusX.val, total: nx_total, diffTotal: nx_diffTotal
                             };
                             matches.push({ N: N_info, NX: NX_info });
                         }
                     }
                 }
             }
-            
-            // Display Results
-            setTimeout(() => { // Use a slight timeout to allow "Searching..." to display
-                if (matches.length === 0) {
-                    patternList.innerHTML = '<p class="text-center text-red-600 font-bold text-lg">❌ No diagonal N vs N+2 patterns found in this chart.</p>';
-                } else {
-                    patternList.innerHTML = `<p class="text-center font-extrabold text-2xl text-green-700 mb-6">🎉 ${matches.length} Matching Patterns Found!</p>`;
-                    
-                    matches.forEach(match => {
-                        const item = document.createElement('div');
-                        item.className = 'match-item p-4 border border-gray-200 rounded-xl bg-white shadow-md hover:bg-gray-50';
-                        item.innerHTML = `
-                            <p class="font-bold text-lg text-indigo-700">Match:</p>
-                            <p class="text-gray-700 mb-1">
-                                <span class="font-semibold text-green-600">${match.N.val}</span> 
-                                at Row ${match.N.row}, ${match.N.colName} 
-                                (CN-Close: <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${match.N.cn}-${match.N.close}</span>)
-                            </p>
-                            <p class="text-gray-700">
-                                <span class="font-semibold text-green-600">${match.NX.val}</span> 
-                                at Row ${match.NX.row}, ${match.NX.colName} 
-                                (Total/Diff: <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${match.NX.total}/${match.NX.diffTotal}</span>)
-                            </p>
-                            <p class="text-xs text-indigo-500 mt-2 font-medium">
-                                Condition Met: ${match.N.cn} = ${match.NX.total} AND ${match.N.close} = ${match.NX.diffTotal}
-                            </p>
-                        `;
-                        patternList.appendChild(item);
-                    });
-                }
+
+            setTimeout(() => { 
+                displayDiagonalResults(matches);
                 button.textContent = 'Execute Diagonal 2-Step Pattern Search (N vs R+2, C+2)';
                 button.disabled = false;
-            }, 300); // Small delay for visual feedback
+            }, 100);
         }
 
-        // --- Chart Loading and Initialization ---
+        function displayDiagonalResults(matches) {
+            const patternList = document.getElementById('pattern-list');
+            const patternName = "DIAGONAL CN TO T|D";
+
+            if (matches.length === 0) {
+                patternList.innerHTML = `<p class="text-center text-red-600 font-bold text-lg">❌ No patterns found for ${patternName} with the selected criteria.</p>`;
+            } else {
+                patternList.innerHTML = `<p class="text-center font-extrabold text-2xl text-green-700 mb-6">🎉 ${matches.length} Matching Patterns Found for ${patternName}!</p>`;
+                
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.className = 'match-item p-4 border border-gray-200 rounded-xl bg-white shadow-md hover:bg-gray-50';
+                    item.innerHTML = `
+                        <p class="font-bold text-lg text-indigo-700">${patternName}</p>
+                        <p class="text-gray-700 mb-1">
+                            <span class="font-semibold text-green-600">${match.N.val}</span> 
+                            at Row ${match.N.row}, ${match.N.colName} 
+                            (CN-Close: <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${match.N.cn}-${match.N.close}</span>)
+                        </p>
+                        <p class="text-gray-700">
+                            <span class="font-semibold text-green-600">${match.NX.val}</span> 
+                            at Row ${match.NX.row}, ${match.NX.colName} 
+                            (Total/Diff: <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${match.NX.total}/${match.NX.diffTotal}</span>)
+                        </p>
+                        <p class="text-xs text-indigo-500 mt-2 font-medium">
+                            Condition Met: CN(${match.N.cn}) = Total(${match.NX.total}) AND CloseCond(${match.N.close}) = DiffTotal(${match.NX.diffTotal})
+                        </p>
+                    `;
+                    patternList.appendChild(item);
+                });
+            }
+        }
+        
+        // --- Pattern 2 Logic: OPEN-CLOSE FINDING (Updated for Dynamic Range) ---
+
+        /**
+         * Checks if SeqA matches SeqB, or if SeqA matches the Pair of SeqB.
+         */
+        function checkSequencePairMatch(seqA, seqB) {
+            if (seqA.length !== seqB.length) return false;
+
+            for (let i = 0; i < seqA.length; i++) {
+                const a = seqA[i];
+                const b = seqB[i];
+
+                if (a !== b && a !== redPairs[b]) {
+                    return false; // Mismatch found
+                }
+            }
+            return true; // Full sequence match (direct or pair)
+        }
+
+        /**
+         * Extracts a sequence of Open or Close digits from the grid.
+         */
+        function extractSequence(type, direction, startIdx, lineIdx, length, gridData) {
+            const sequence = [];
+            
+            for (let i = 0; i < length; i++) {
+                let entry = null;
+                if (direction === 'row') {
+                    // Extract along the row (r=lineIdx, c=startIdx+i)
+                    entry = gridData[lineIdx] ? gridData[lineIdx][startIdx + i] : null;
+                } else if (direction === 'col') {
+                    // Extract along the column (r=startIdx+i, c=lineIdx)
+                    entry = gridData[startIdx + i] ? gridData[startIdx + i][lineIdx] : null;
+                }
+
+                if (!entry || !entry.val || !/^\d{2}$/.test(entry.val)) {
+                    return null; 
+                }
+
+                if (type === 'open') {
+                    sequence.push(getOpenDigit(entry.val));
+                } else if (type === 'close') {
+                    sequence.push(getCloseDigit(entry.val));
+                }
+            }
+            return sequence;
+        }
+
+        function runSequenceSearch() {
+            const { rows: ROWS, cols: COLS, data: gridData } = currentChartData;
+            const patternList = document.getElementById('pattern-list');
+            patternList.innerHTML = '';
+            
+            const startRowInput = document.getElementById('start-row-input');
+            const endRowInput = document.getElementById('end-row-input');
+            
+            const R_start = parseInt(startRowInput.value);
+            const R_end = parseInt(endRowInput.value);
+            
+            // Input Validation
+            if (isNaN(R_start) || R_start < 1 || R_start > ROWS || 
+                isNaN(R_end) || R_end < 1 || R_end > ROWS || R_start > R_end) {
+                
+                patternList.innerHTML = `<p class="text-center text-red-600 font-bold text-lg">
+                    ❌ Invalid Row Range. Please ensure Start Row (1 to ${ROWS}) is less than or equal to End Row (1 to ${ROWS}).
+                </p>`;
+                return;
+            }
+
+            const button = document.getElementById('find-pattern-btn');
+            button.disabled = true;
+            button.textContent = 'Searching... (This might take a moment)';
+
+            const matches = [];
+            const searchTypes = ['open', 'close']; 
+            const possibleLengths = [3, 4, 5]; 
+            const allSequences = [];
+            
+            const R_start_idx = R_start - 1; // 0-based start index
+            const R_end_idx = R_end - 1;     // 0-based end index (inclusive)
+
+            // 1. Collect all valid sequences (Open/Close, Row/Col, lengths 3, 4, 5) within the R_start to R_end range
+            for (const length of possibleLengths) {
+                for (const type of searchTypes) {
+                    
+                    // --- Search in Rows (Horizontal Sequences) ---
+                    // Iterate through all rows (r) within the specified range
+                    for (let r = R_start_idx; r <= R_end_idx; r++) { 
+                        for (let c = 0; c <= COLS - length; c++) { 
+                            const seq = extractSequence(type, 'row', c, r, length, gridData);
+                            if (seq) {
+                                allSequences.push({ 
+                                    seq: seq, 
+                                    type: type, 
+                                    direction: 'Row', 
+                                    startR: r + 1, // 1-based Row Index
+                                    startC: c + 1, // 1-based Column Index
+                                    length: length
+                                });
+                            }
+                        }
+                    }
+
+                    // --- Search in Columns (Vertical Sequences) ---
+                    for (let c = 0; c < COLS; c++) { 
+                        
+                        // Vertical sequence must start at or after R_start_idx
+                        const finalStartR = R_start_idx;
+
+                        // Vertical sequence must end at or before R_end_idx
+                        // (r + length - 1) <= R_end_idx  =>  r <= R_end_idx - length + 1
+                        const maxStartRForRange = R_end_idx - length + 1;
+                        
+                        // Determine the final upper bound for the starting row index 'r'
+                        const finalEndR = Math.min(ROWS - length - 1, maxStartRForRange); 
+                        
+                        // Note: If length is 3 and range is 450-470 (21 rows), maxStartRForRange = 470 - 3 + 1 = 468.
+                        // The loop should run from r = 449 (450-1) up to 468.
+
+                        if (finalStartR <= finalEndR) { // Only run if a sequence of this length can fit in the range
+                            for (let r = finalStartR; r <= finalEndR; r++) { 
+                                const seq = extractSequence(type, 'col', r, c, length, gridData);
+                                if (seq) {
+                                    allSequences.push({ 
+                                        seq: seq, 
+                                        type: type, 
+                                        direction: 'Col', 
+                                        startR: r + 1, 
+                                        startC: c + 1,
+                                        length: length
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            } 
+            
+            // 2. Compare every unique pair of sequences
+            const sequenceCount = allSequences.length;
+            for (let i = 0; i < sequenceCount; i++) {
+                for (let j = i + 1; j < sequenceCount; j++) {
+                    const seqA = allSequences[i];
+                    const seqB = allSequences[j];
+                    
+                    // 2a. Only compare sequences of the same length
+                    if (seqA.length !== seqB.length) continue; 
+                    
+                    // 2b. CRITICAL CONSTRAINT: Sequence B must start on a row strictly GREATER than Sequence A.
+                    if (seqA.startR >= seqB.startR) {
+                        continue; 
+                    }
+                    
+                    // 2c. Check for match (direct or Const Pair match). This handles all type combinations.
+                    if (checkSequencePairMatch(seqA.seq, seqB.seq)) {
+                        matches.push({ seqA: seqA, seqB: seqB, length: seqA.length });
+                    }
+                }
+            }
+
+            // Display Results
+            setTimeout(() => { 
+                displaySequenceResults(matches, R_start, R_end);
+                button.textContent = 'Execute Comprehensive Sequence Matching Search';
+                button.disabled = false;
+            }, 100); 
+        }
+
+        function displaySequenceResults(matches, R_start, R_end) {
+            const patternList = document.getElementById('pattern-list');
+            const patternName = "OPEN-CLOSE FINDING";
+            
+            if (matches.length === 0) {
+                patternList.innerHTML = `<p class="text-center text-red-600 font-bold text-lg">
+                    ❌ No matching sequences (lengths 3, 4, or 5) found within the range **Row ${R_start} to Row ${R_end}** that satisfy the $R_B > R_A$ constraint for ${patternName}.
+                </p>`;
+            } else {
+                patternList.innerHTML = `<p class="text-center font-extrabold text-2xl text-green-700 mb-6">
+                    🎉 ${matches.length} Sequence Matches Found in **Rows ${R_start} to ${R_end}**!
+                </p>`;
+                
+                matches.forEach(match => {
+                    const seqA = match.seqA;
+                    const seqB = match.seqB;
+                    const item = document.createElement('div');
+                    item.className = 'match-item p-4 border border-gray-200 rounded-xl bg-white shadow-md hover:bg-gray-50';
+                    item.innerHTML = `
+                        <p class="font-bold text-lg text-purple-700">${patternName} (Length ${match.length})</p>
+                        <p class="text-gray-700 mb-1">
+                            <span class="font-semibold text-red-600">Seq A (R${seqA.startR}, C${seqA.startC} - ${seqA.type.toUpperCase()}s in ${seqA.direction}):</span> 
+                            <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${seqA.seq.join(', ')}</span> 
+                        </p>
+                        <p class="text-gray-700">
+                            <span class="font-semibold text-green-600">Seq B (R${seqB.startR}, C${seqB.startC} - ${seqB.type.toUpperCase()}s in ${seqB.direction}):</span> 
+                            <span class="font-mono bg-yellow-100 px-1 rounded font-bold">${seqB.seq.join(', ')}</span> 
+                        </p>
+                        <p class="text-xs text-purple-500 mt-2 font-medium">
+                            Condition Met: $R_B > R_A$ (${seqB.startR} > ${seqA.startR}) and Const Pair Match.
+                        </p>
+                    `;
+                    patternList.appendChild(item);
+                });
+            }
+        }
+
+        // --- UI Setup and Control (Modified) ---
+
+        function getSelectedPattern() {
+            const patternRadios = document.querySelectorAll('input[name="pattern-type"]:checked');
+            return patternRadios.length ? patternRadios[0].value : 'pattern1';
+        }
+
+        function getSelectedColumns() {
+            if (!currentChartData) return [];
+            const isAllDays = document.getElementById('radio-all-days').checked;
+            const chartColCount = currentChartData.cols;
+            const maxStartingIndex = chartColCount - 2;
+
+            if (isAllDays) {
+                return Array.from({ length: maxStartingIndex }, (_, i) => i);
+            } else {
+                const selectedIndices = [];
+                const checkboxes = document.querySelectorAll('#specific-day-checkboxes input[type="checkbox"]');
+                checkboxes.forEach((checkbox, index) => {
+                    if (index < maxStartingIndex && checkbox.checked) {
+                        selectedIndices.push(index);
+                    }
+                });
+                return selectedIndices;
+            }
+        }
+        
+        function setupDaySelectionUI() {
+            const specificDayCheckboxesDiv = document.getElementById('specific-day-checkboxes');
+            specificDayCheckboxesDiv.innerHTML = ''; 
+
+            const availableCols = currentChartData ? currentChartData.cols : 8;
+            
+            for (let i = 0; i < availableCols - 2; i++) { 
+                const colName = COLUMN_HEADERS[i] || `Col ${i+1}`;
+                const checkboxContainer = document.createElement('label');
+                checkboxContainer.className = 'flex items-center space-x-2 text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm font-medium';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `day-check-${i}`;
+                checkbox.className = 'h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500';
+                
+                checkboxContainer.appendChild(checkbox);
+                checkboxContainer.innerHTML += `<span>${colName}</span>`;
+                specificDayCheckboxesDiv.appendChild(checkboxContainer);
+            }
+            
+            const radioAll = document.getElementById('radio-all-days');
+            const radioSpecific = document.getElementById('radio-specific-days');
+            
+            function toggleCheckboxes() {
+                if (radioSpecific.checked) {
+                    specificDayCheckboxesDiv.classList.remove('hidden');
+                } else {
+                    specificDayCheckboxesDiv.classList.add('hidden');
+                }
+            }
+            
+            radioAll.addEventListener('change', toggleCheckboxes);
+            radioSpecific.addEventListener('change', toggleCheckboxes);
+            toggleCheckboxes();
+        }
+
+        function setupRowInputs() {
+            if (!currentChartData) return;
+            const startInput = document.getElementById('start-row-input');
+            const endInput = document.getElementById('end-row-input');
+            
+            const maxRows = currentChartData.rows;
+            startInput.max = maxRows;
+            endInput.max = maxRows;
+            
+            // Set default range: 1 to min(20, maxRows)
+            startInput.value = 1;
+            endInput.value = Math.min(20, maxRows);
+        }
+
+        function togglePatternControls() {
+            const selectedPattern = getSelectedPattern();
+            const daySection = document.getElementById('day-selection-section');
+            const sequenceControls = document.getElementById('sequence-controls');
+            const findPatternBtn = document.getElementById('find-pattern-btn');
+
+            daySection.classList.add('hidden');
+            sequenceControls.classList.add('hidden');
+
+            findPatternBtn.removeEventListener('click', runDiagonalPatternSearch);
+            findPatternBtn.removeEventListener('click', runSequenceSearch);
+
+            if (selectedPattern === 'pattern1') {
+                daySection.classList.remove('hidden');
+                findPatternBtn.addEventListener('click', runDiagonalPatternSearch);
+                findPatternBtn.textContent = 'Execute Diagonal 2-Step Pattern Search (N vs R+2, C+2)';
+            } else if (selectedPattern === 'pattern2') {
+                sequenceControls.classList.remove('hidden');
+                findPatternBtn.addEventListener('click', runSequenceSearch);
+                findPatternBtn.textContent = 'Execute Comprehensive Sequence Matching Search';
+            }
+            
+            document.getElementById('pattern-list').innerHTML = '<p class="text-center text-gray-500 font-semibold">Click the button above to start the comprehensive search.</p>';
+        }
+
+        function attachPatternListeners() {
+            document.querySelectorAll('input[name="pattern-type"]').forEach(radio => {
+                radio.addEventListener('change', togglePatternControls);
+            });
+            togglePatternControls(); 
+        }
 
         function loadChartForAnalysis(label) {
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
@@ -225,9 +622,9 @@
             currentChartData = savedChart;
             document.getElementById('chart-name-header').textContent = `Analyzing Chart: ${label}`;
 
-            // Attach listener after chart is loaded
-            const findPatternBtn = document.getElementById('find-pattern-btn');
-            findPatternBtn.addEventListener('click', findDiagonalPattern);
+            setupDaySelectionUI();
+            setupRowInputs(); // Initialize row inputs with chart max rows
+            attachPatternListeners();
         }
 
         // Initialization on page load
@@ -236,10 +633,7 @@
             
             if (chartToLoad) {
                 loadChartForAnalysis(chartToLoad);
-                // Clear the temporary storage key after use
                 localStorage.removeItem('chartToLoadForAnalysis'); 
-            } else {
-                // If no chart is set, the default "no-chart-message" will be visible.
             }
         });
     </script>
