@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Store Grid Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f9fe;
+            margin: 0;
+            padding: 30px 8px 80px 8px;
+        }
+        h1 {
+            margin-bottom: 18px;
+            color: #273356;
+        }
+        .controls {
+            margin-bottom: 19px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 14px;
+        }
+        .controls input[type='text'], .controls input[type='number'] {
+            width: 170px;
+            max-width: 90vw;
+            font-size: 16px;
+            padding: 6px 10px;
+            border: 1px solid #b5c7e6;
+            border-radius: 5px;
+        }
+        .controls button {
+            font-size: 15px;
+            padding: 6px 14px;
+            background: #3a5bea;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.22s;
+        }
+        .controls button:hover {
+            background: #2233a2;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            width: 100%;
+        }
+        table {
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            margin: 0 auto;
+            box-shadow: 0 2px 14px #ccc7;
+            width: 100%;
+            min-width: 420px;
+            max-width: 100vw;
+        }
+        th, td {
+            border: 1.5px solid #333;
+            width: 57px;
+            height: 57px;
+            max-width: 16vw;
+            text-align: center;
+            font-size: 22px;
+            background: #fafdff;
+            box-sizing: border-box;
+            vertical-align: middle;
+            padding: 0;
+        }
+        td {
+            background: #f8fafc;
+            font-weight: bold;
+        }
+        .opendigit {
+            color: #2186cc;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        .closedigit {
+            color: #eb2323;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        @media (max-width: 900px) {
+            th, td {
+                font-size: 17px;
+                width: 43px;
+                height: 43px;
+            }
+            .opendigit,.closedigit { font-size:19px;}
+        }
+        @media (max-width: 600px) {
+            th, td {
+                width: 33px;
+                height: 33px;
+                font-size: 14px;
+            }
+            .opendigit,.closedigit { font-size:14px;}
+        }
+        .save-section {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            background: #e6eaf4;
+            padding: 12px;
+            box-shadow: 0 -2px 8px #bbc7;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-content: center;
+        }
+        .save-section input {
+            font-size: 16px;
+            padding: 4px 11px;
+            border: 1.1px solid #8fb1e5;
+            border-radius: 4px;
+            max-width: 200px;
+        }
+        .save-section button{
+            font-size: 16px; background: #2fcf37; color: #fff; border: none; padding: 5px 18px; border-radius:5px; cursor: pointer;
+        }
+        .save-section button:hover{ background: #139020;}
+    </style>
+</head>
+<body>
+    <h1>Store Grid Table (Responsive)</h1>
+    <div class="controls">
+        <input id="rowsInput" type="number" value="100" min="1" max="2000" />
+        <input id="colsInput" type="number" value="7" min="1" max="50" />
+        <button id="resizeBtn">Modify Size</button>
+    </div>
+    <div class="controls">
+        <input id="openInput" placeholder="Open: 2-digit numbers or **/xx (space separated)">
+        <button id="openBtn">Open</button>
+        <input id="closeInput" placeholder="Close: 2-digit numbers or **/xx (space separated)">
+        <button id="closeBtn">Close</button>
+    </div>
+    <div class="table-wrap">
+        <table id="gridTable"></table>
+    </div>
+    <div class="save-section">
+        <input id="username" type="text" placeholder="Enter Your Name" />
+        <button id="saveBtn">Save to store.html</button>
+        <span id="savemsg" style="color:green;display:none;margin-left:10px;"></span>
+    </div>
+
+<script>
+// CN formula
+function calculateCN(num) {
+    if (num === '**' || num.toLowerCase() === 'xx') return '*';
+    if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return '';
+    let a = parseInt(num[0]), b = parseInt(num[1]);
+    let step1 = (a + b) % 10;
+    let step2 = (a + a) % 10;
+    return (step1 + step2) % 10;
+}
+let ROWS = 100, COLS = 7;
+let openDigits = Array(ROWS * COLS).fill('');
+let closeDigits = Array(ROWS * COLS).fill('');
+const table = document.getElementById('gridTable');
+
+function renderTable() {
+    table.innerHTML = '';
+    for (let r = 0; r < ROWS; r++) {
+        let tr = document.createElement('tr');
+        for (let c = 0; c < COLS; c++) {
+            let td = document.createElement('td');
+            let idx = r * COLS + c;
+            let open = openDigits[idx] !== undefined && openDigits[idx] !== '' ? openDigits[idx] : '';
+            let close = closeDigits[idx] !== undefined && closeDigits[idx] !== '' ? closeDigits[idx] : '';
+            let val = '';
+            if (open || close) {
+                val = `<span class="opendigit">${open}</span><span class="closedigit">${close}</span>`;
+            }
+            td.innerHTML = val;
+            tr.appendChild(td);
+        }
+        table.appendChild(tr);
+    }
+}
+renderTable();
+
+document.getElementById('resizeBtn').onclick = function() {
+    ROWS = Math.min(2000, Math.max(1, parseInt(document.getElementById('rowsInput').value)));
+    COLS = Math.min(50, Math.max(1, parseInt(document.getElementById('colsInput').value)));
+    openDigits = Array(ROWS * COLS).fill('');
+    closeDigits = Array(ROWS * COLS).fill('');
+    renderTable();
+};
+document.getElementById('openBtn').onclick = function() {
+    let nums = document.getElementById('openInput').value.trim().split(/\s+/);
+    openDigits = Array(ROWS * COLS).fill('');
+    nums.forEach((num, idx) => {
+        if (idx < openDigits.length && (num === '**' || num.toLowerCase() === 'xx' || /^\d{2}$/.test(num))) 
+            openDigits[idx] = calculateCN(num);
+    });
+    renderTable();
+};
+document.getElementById('closeBtn').onclick = function() {
+    let nums = document.getElementById('closeInput').value.trim().split(/\s+/);
+    closeDigits = Array(ROWS * COLS).fill('');
+    nums.forEach((num, idx) => {
+        if (idx < closeDigits.length && (num === '**' || num.toLowerCase() === 'xx' || /^\d{2}$/.test(num))) 
+            closeDigits[idx] = calculateCN(num);
+    });
+    renderTable();
+};
+
+document.getElementById('saveBtn').onclick = function() {
+    let name = document.getElementById('username').value.trim();
+    if(!name) {
+        alert('Please enter your name!');
+        return;
+    }
+    // Prepare HTML table for export
+    let content = `<html><head><meta charset='UTF-8'><title>Saved Grid for ${name}</title>
+    <style>
+    body{font-family:sans-serif;background:#f4f9fe;padding:20px;}
+    table{border-collapse:collapse;}
+    td,th{border:1px solid #333;width:40px;height:40px;text-align:center;}
+    .opendigit{color:#2186cc;font-weight:bold;}
+    .closedigit{color:#eb2323;font-weight:bold;}
+    @media(max-width:700px){td,th{width:24px;height:24px;font-size:12px;}}
+    </style>
+    </head><body><h2>Grid for ${name}</h2><table>`;
+    for (let r=0;r<ROWS;r++) {
+        content += "<tr>";
+        for (let c=0;c<COLS;c++) {
+            let idx = r * COLS + c;
+            let open = openDigits[idx]? `<span class="opendigit">${openDigits[idx]}</span>` : '';
+            let close = closeDigits[idx]? `<span class="closedigit">${closeDigits[idx]}</span>` : '';
+            content += `<td>${open}${close}</td>`;
+        }
+        content += "</tr>";
+    }
+    content += "</table></body></html>";
+    const blob = new Blob([content], {type:"text/html"});
+    const url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'store.html';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+    document.getElementById('savemsg').textContent = "Saved!";
+    document.getElementById('savemsg').style.display = "inline";
+    setTimeout(()=>{document.getElementById('savemsg').style.display='none';}, 2000);
+};
+</script>
+</body>
+</html>
