@@ -122,16 +122,16 @@ td { background: #f8fafc; font-weight: bold; position: relative; user-select: no
 
 <!-- controls (rows/cols etc) -->
 <div class="controls">
-    <label>Rows: <input id="rowsInput" type="number" value="100" min="1" max="2000" /></label>
+    <label>Rows: <input id="rowsInput" type="number" value="17" min="1" max="2000" /></label>
     <label>Cols: <input id="colsInput" type="number" value="7" min="1" max="50" /></label>
     <button id="resizeBtn">Modify Size</button>
     <button id="showIndexBtn">Show Index: <span id="showIndexState">OFF</span></button>
 </div>
 
 <div class="controls">
-    <input id="openInput" placeholder="Open: 2-digit numbers or **/xx (space or continuous)">
+    <input id="openInput" placeholder="Open: 2-digit numbers or **/xx (space or continuous / pasted grid allowed)" style="width:360px">
     <button id="openBtn">Open</button>
-    <input id="closeInput" placeholder="Close: 2-digit numbers or **/xx (space or continuous)">
+    <input id="closeInput" placeholder="Close: 2-digit numbers or **/xx (space or continuous / pasted grid allowed)">
     <button id="closeBtn">Close</button>
     <button id="clearOpenBtn">Clear Open</button>
     <button id="clearCloseBtn">Clear Close</button>
@@ -153,36 +153,38 @@ function calculateCN(num) {
     return (step1+step2)%10;
 }
 
-/* ---------- smart parser ----------
- Accepts spaced tokens and continuous digit runs.
+/* ---------- robust parser ----------
+ Extract tokens '**' or 'xx' or digit-runs using regex.
+ For each digit-run, split into pairs: '234567' -> ['23','45','67'].
+ Handles pasted grids with tabs/newlines/commas etc.
+ Leftover single digit at end is ignored.
 -------------------------------------*/
 function parseToPairs(raw) {
     if (!raw) return [];
-    const tokens = raw.trim().split(/\s+/);
+    // Normalize: replace non-breaking spaces with normal space
+    raw = raw.replace(/\u00A0/g, ' ');
+    // Use regex to get tokens: '**' | 'xx' (case-insensitive) | digit runs
+    const matches = raw.match(/\*\*|xx|\d+/gi) || [];
     const pairs = [];
-    for (const t of tokens) {
-        if (t === '') continue;
+    for (const t of matches) {
+        if (!t) continue;
         const lower = t.toLowerCase();
         if (lower === '**' || lower === 'xx') {
-            pairs.push(t); // keep as-is
+            pairs.push(t); // keep exact token
             continue;
         }
-        const digits = t.replace(/\D+/g, '');
-        if (!digits) continue;
-        if (digits.length === 2) {
-            pairs.push(digits);
-            continue;
-        }
+        // t is a digit run — break into 2-digit chunks
+        const digits = t.replace(/\D/g, '');
         for (let i = 0; i + 1 < digits.length; i += 2) {
             pairs.push(digits.slice(i, i + 2));
         }
-        // leftover single digit (if any) is ignored
+        // single leftover digit ignored
     }
     return pairs;
 }
 
 /* ---------- grid state ---------- */
-let ROWS=100, COLS=7;
+let ROWS=17, COLS=7;
 let openDigits = Array(ROWS*COLS).fill('');
 let closeDigits = Array(ROWS*COLS).fill('');
 const table = document.getElementById('gridTable');
@@ -204,7 +206,6 @@ function renderTable() {
             }else{
                 td.innerHTML=SHOW_INDEX?`<div class="cell-index">${idx}</div><div class="empty-faint">${idx}</div>`:'';
             }
-            td.onclick=onCellClick;
             tr.appendChild(td);
         }
         table.appendChild(tr);
@@ -229,8 +230,7 @@ document.getElementById('resizeBtn').onclick=function(){
 
 // open/close fill — uses parseToPairs()
 document.getElementById('openBtn').onclick=function(){
-    let raw=document.getElementById('openInput').value.trim();
-    if(!raw) return;
+    let raw=document.getElementById('openInput').value || '';
     const pairs = parseToPairs(raw);
     openDigits.fill('');
     pairs.forEach((token, idx) => {
@@ -241,8 +241,7 @@ document.getElementById('openBtn').onclick=function(){
     renderTable();
 };
 document.getElementById('closeBtn').onclick=function(){
-    let raw=document.getElementById('closeInput').value.trim();
-    if(!raw) return;
+    let raw=document.getElementById('closeInput').value || '';
     const pairs = parseToPairs(raw);
     closeDigits.fill('');
     pairs.forEach((token, idx) => {
@@ -266,20 +265,23 @@ document.getElementById('showIndexBtn').onclick=function(){
     renderTable();
 };
 
-// edit a single cell
-function onCellClick(){
-    const idx=parseInt(this.dataset.idx,10);
-    const prevOpen=openDigits[idx]||'';
-    const prevClose=closeDigits[idx]||'';
-    const inputOpen=prompt(`Cell ${idx}\nOpen value (2-digit or **/xx):`, prevOpen);
-    if(inputOpen===null) return;
-    const inputClose=prompt(`Cell ${idx}\nClose value (2-digit or **/xx):`, prevClose);
-    if(inputClose===null) return;
+// edit a single cell — use event delegation for reliability
+table.addEventListener('click', function(e){
+    const td = e.target.closest('td');
+    if (!td) return;
+    const idx = parseInt(td.dataset.idx, 10);
+    if (Number.isNaN(idx)) return;
+    const prevOpen = openDigits[idx] || '';
+    const prevClose = closeDigits[idx] || '';
+    const inputOpen = prompt(`Cell ${idx}\nOpen value (2-digit or **/xx):`, prevOpen);
+    if (inputOpen === null) return;
+    const inputClose = prompt(`Cell ${idx}\nClose value (2-digit or **/xx):`, prevClose);
+    if (inputClose === null) return;
     function setVal(input){ if(!input||input.trim()==='') return ''; input=input.trim(); return (input==='**'||input.toLowerCase()==='xx'||/^\d{2}$/.test(input))?calculateCN(input):''; }
     openDigits[idx]=setVal(inputOpen);
     closeDigits[idx]=setVal(inputClose);
     renderTable();
-}
+});
 
 /* ---------- chart name live update ---------- */
 const chartNameTop = document.getElementById('chartNameTop');
