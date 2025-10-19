@@ -5,15 +5,34 @@
 <title>Store Grid Table</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
+/* ---------- base layout ---------- */
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f4f9fe;
     margin: 0;
-    padding: 30px 8px 120px 8px;
+    padding: 20px 8px 80px 8px; /* reduced bottom padding since bottom bar removed */
 }
+.header-top {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+}
+.header-top input[type="text"]{
+    padding:8px 10px;
+    border-radius:6px;
+    border:1px solid #b5c7e6;
+    font-size:15px;
+}
+.header-top button{
+    background:#3a5bea;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:15px;
+}
+.header-top button:hover{background:#2233a2;}
 h1 {
-    margin-bottom: 18px;
+    margin: 6px 0 12px 0;
     color: #273356;
+    font-size:20px;
 }
 .controls {
     margin-bottom: 12px;
@@ -22,6 +41,7 @@ h1 {
     align-items: center;
     gap: 8px 10px;
 }
+.controls label { display:flex; gap:6px; align-items:center; font-size:14px; color:#213; }
 .controls input[type='text'], .controls input[type='number'] {
     width: 170px;
     max-width: 90vw;
@@ -41,6 +61,7 @@ h1 {
     transition: background 0.18s;
 }
 .controls button:hover { background: #2233a2; }
+
 .table-wrap { overflow-x: auto; width: 100%; margin-top:6px; }
 table {
     border-collapse: collapse;
@@ -67,6 +88,7 @@ td { background: #f8fafc; font-weight: bold; position: relative; user-select: no
 .closedigit { color: #eb2323; font-weight: bold; font-size: 24px; display:inline-block; }
 .cell-index { position: absolute; left: 4px; top: 4px; font-size: 11px; color: #6b7280; font-weight: 600; opacity: 0.8; }
 .empty-faint { color: #9aa7bf; font-weight: 600; font-size: 16px; }
+
 @media (max-width: 900px) {
     td, th { font-size: 17px; height: 43px; }
     .opendigit,.closedigit { font-size:19px; }
@@ -74,29 +96,31 @@ td { background: #f8fafc; font-weight: bold; position: relative; user-select: no
 @media (max-width: 600px) {
     td, th { font-size: 14px; height: 40px; }
     .opendigit,.closedigit { font-size:14px; }
-    .table-wrap { overflow-x: hidden; }
+    .table-wrap { overflow-x: hidden; } /* no horizontal scroll on small screens */
 }
-.save-section {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: #e6eaf4;
-    padding: 12px;
-    box-shadow: 0 -2px 8px #bbc7;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    justify-content: center;
-    z-index: 40;
-}
-.save-section input { font-size: 16px; padding: 6px 11px; border: 1.1px solid #8fb1e5; border-radius: 4px; max-width: 200px; }
-.save-section button{ font-size: 16px; background: #2fcf37; color: #fff; border: none; padding: 6px 14px; border-radius:5px; cursor: pointer; }
-.save-section button:hover{ background: #139020;}
-.small-muted { font-size:12px; color:#475569; margin-left:6px; }
 </style>
 </head>
 <body>
-<h1>Store Grid Table (Responsive)</h1>
 
+<!-- TOP BAR: chart name and filename + SAVE (only top) -->
+<div class="header-top">
+    <label>
+        Chart Name:
+        <input id="chartNameTop" type="text" placeholder="Type chart name here" value="My Chart">
+    </label>
+
+    <label>
+        Save filename:
+        <input id="saveFilenameTop" type="text" placeholder="store.html" value="store.html">
+    </label>
+
+    <button id="topSaveBtn" title="Save current grid using the filename above">Save (Top)</button>
+</div>
+
+<!-- Page title area that shows chart name live -->
+<h1 id="pageTitle">Store Grid Table (Responsive) — <span id="chartDisplay">My Chart</span></h1>
+
+<!-- controls (rows/cols etc) -->
 <div class="controls">
     <label>Rows: <input id="rowsInput" type="number" value="100" min="1" max="2000" /></label>
     <label>Cols: <input id="colsInput" type="number" value="7" min="1" max="50" /></label>
@@ -105,9 +129,9 @@ td { background: #f8fafc; font-weight: bold; position: relative; user-select: no
 </div>
 
 <div class="controls">
-    <input id="openInput" placeholder="Open: 2-digit numbers or **/xx (space separated)">
+    <input id="openInput" placeholder="Open: 2-digit numbers or **/xx (space or continuous)">
     <button id="openBtn">Open</button>
-    <input id="closeInput" placeholder="Close: 2-digit numbers or **/xx (space separated)">
+    <input id="closeInput" placeholder="Close: 2-digit numbers or **/xx (space or continuous)">
     <button id="closeBtn">Close</button>
     <button id="clearOpenBtn">Clear Open</button>
     <button id="clearCloseBtn">Clear Close</button>
@@ -118,15 +142,8 @@ td { background: #f8fafc; font-weight: bold; position: relative; user-select: no
     <table id="gridTable" role="grid" aria-label="Store Grid"></table>
 </div>
 
-<div class="save-section">
-    <input id="username" type="text" placeholder="Enter Your Name" />
-    <button id="saveBtn">Save to store.html</button>
-    <span id="savemsg" style="color:green;display:none;margin-left:10px;"></span>
-    <span class="small-muted">Tip: click a cell to edit its Open/Close values</span>
-</div>
-
 <script>
-// CN formula
+/* ---------- helper CN function ---------- */
 function calculateCN(num) {
     if (num === '**' || num.toLowerCase() === 'xx') return '*';
     if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return '';
@@ -136,12 +153,42 @@ function calculateCN(num) {
     return (step1+step2)%10;
 }
 
+/* ---------- smart parser ----------
+ Accepts spaced tokens and continuous digit runs.
+-------------------------------------*/
+function parseToPairs(raw) {
+    if (!raw) return [];
+    const tokens = raw.trim().split(/\s+/);
+    const pairs = [];
+    for (const t of tokens) {
+        if (t === '') continue;
+        const lower = t.toLowerCase();
+        if (lower === '**' || lower === 'xx') {
+            pairs.push(t); // keep as-is
+            continue;
+        }
+        const digits = t.replace(/\D+/g, '');
+        if (!digits) continue;
+        if (digits.length === 2) {
+            pairs.push(digits);
+            continue;
+        }
+        for (let i = 0; i + 1 < digits.length; i += 2) {
+            pairs.push(digits.slice(i, i + 2));
+        }
+        // leftover single digit (if any) is ignored
+    }
+    return pairs;
+}
+
+/* ---------- grid state ---------- */
 let ROWS=100, COLS=7;
 let openDigits = Array(ROWS*COLS).fill('');
 let closeDigits = Array(ROWS*COLS).fill('');
 const table = document.getElementById('gridTable');
 let SHOW_INDEX=false;
 
+/* ---------- render ---------- */
 function renderTable() {
     table.innerHTML='';
     for(let r=0;r<ROWS;r++){
@@ -165,7 +212,7 @@ function renderTable() {
 }
 renderTable();
 
-// Resize
+/* ---------- controls behavior ---------- */
 document.getElementById('resizeBtn').onclick=function(){
     const newRows=Math.min(2000,Math.max(1,parseInt(document.getElementById('rowsInput').value,10)||1));
     const newCols=Math.min(50,Math.max(1,parseInt(document.getElementById('colsInput').value,10)||1));
@@ -180,26 +227,38 @@ document.getElementById('resizeBtn').onclick=function(){
     renderTable();
 };
 
-// Open / Close buttons
+// open/close fill — uses parseToPairs()
 document.getElementById('openBtn').onclick=function(){
-    let nums=document.getElementById('openInput').value.trim().split(/\s+/);
+    let raw=document.getElementById('openInput').value.trim();
+    if(!raw) return;
+    const pairs = parseToPairs(raw);
     openDigits.fill('');
-    nums.forEach((num,idx)=>{if(idx<openDigits.length&&(num==='**'||num.toLowerCase()==='xx'||/^\d{2}$/.test(num))) openDigits[idx]=calculateCN(num);});
+    pairs.forEach((token, idx) => {
+        if (idx < openDigits.length && (token === '**' || token.toLowerCase() === 'xx' || /^\d{2}$/.test(token))) {
+            openDigits[idx] = calculateCN(token);
+        }
+    });
     renderTable();
 };
 document.getElementById('closeBtn').onclick=function(){
-    let nums=document.getElementById('closeInput').value.trim().split(/\s+/);
+    let raw=document.getElementById('closeInput').value.trim();
+    if(!raw) return;
+    const pairs = parseToPairs(raw);
     closeDigits.fill('');
-    nums.forEach((num,idx)=>{if(idx<closeDigits.length&&(num==='**'||num.toLowerCase()==='xx'||/^\d{2}$/.test(num))) closeDigits[idx]=calculateCN(num);});
+    pairs.forEach((token, idx) => {
+        if (idx < closeDigits.length && (token === '**' || token.toLowerCase() === 'xx' || /^\d{2}$/.test(token))) {
+            closeDigits[idx] = calculateCN(token);
+        }
+    });
     renderTable();
 };
 
-// Clear buttons
+// clear buttons
 document.getElementById('clearOpenBtn').onclick=function(){ openDigits.fill(''); renderTable(); };
 document.getElementById('clearCloseBtn').onclick=function(){ closeDigits.fill(''); renderTable(); };
 document.getElementById('clearAllBtn').onclick=function(){ openDigits.fill(''); closeDigits.fill(''); renderTable(); };
 
-// Show index toggle
+// toggle index
 document.getElementById('showIndexBtn').onclick=function(){
     SHOW_INDEX=!SHOW_INDEX;
     document.getElementById('showIndexState').textContent=SHOW_INDEX?'ON':'OFF';
@@ -207,14 +266,14 @@ document.getElementById('showIndexBtn').onclick=function(){
     renderTable();
 };
 
-// Cell edit
+// edit a single cell
 function onCellClick(){
     const idx=parseInt(this.dataset.idx,10);
     const prevOpen=openDigits[idx]||'';
     const prevClose=closeDigits[idx]||'';
-    const inputOpen=prompt(`Cell ${idx}\nOpen value:`,prevOpen);
+    const inputOpen=prompt(`Cell ${idx}\nOpen value (2-digit or **/xx):`, prevOpen);
     if(inputOpen===null) return;
-    const inputClose=prompt(`Cell ${idx}\nClose value:`,prevClose);
+    const inputClose=prompt(`Cell ${idx}\nClose value (2-digit or **/xx):`, prevClose);
     if(inputClose===null) return;
     function setVal(input){ if(!input||input.trim()==='') return ''; input=input.trim(); return (input==='**'||input.toLowerCase()==='xx'||/^\d{2}$/.test(input))?calculateCN(input):''; }
     openDigits[idx]=setVal(inputOpen);
@@ -222,22 +281,56 @@ function onCellClick(){
     renderTable();
 }
 
-// Save
-document.getElementById('saveBtn').onclick=function(){
-    let name=document.getElementById('username').value.trim();
-    if(!name){ alert('Enter your name!'); return; }
-    let content=`<html><head><meta charset='UTF-8'><title>Saved Grid for ${name}</title>
-    <style>body{font-family:sans-serif;background:#f4f9fe;padding:20px;} table{border-collapse:collapse;} td,th{border:1px solid #333;width:40px;height:40px;text-align:center;} .opendigit{color:#2186cc;font-weight:bold;} .closedigit{color:#eb2323;font-weight:bold;} @media(max-width:700px){td,th{width:24px;height:24px;font-size:12px;}}</style>
-    </head><body><h2>Grid for ${name}</h2><table>`;
-    for(let r=0;r<ROWS;r++){ content+='<tr>'; for(let c=0;c<COLS;c++){ let idx=r*COLS+c; let open=openDigits[idx]?`<span class="opendigit">${openDigits[idx]}</span>`:''; let close=closeDigits[idx]?`<span class="closedigit">${closeDigits[idx]}</span>`:''; content+=`<td>${open}${close}</td>`; } content+='</tr>'; }
-    content+='</table></body></html>';
-    const blob=new Blob([content],{type:"text/html"});
-    const url=URL.createObjectURL(blob);
-    let a=document.createElement('a'); a.href=url; a.download='store.html'; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-    const msgEl=document.getElementById('savemsg');
-    msgEl.textContent='Saved!'; msgEl.style.display='inline';
-    setTimeout(()=>{msgEl.style.display='none';},2000);
+/* ---------- chart name live update ---------- */
+const chartNameTop = document.getElementById('chartNameTop');
+const chartDisplay = document.getElementById('chartDisplay');
+chartNameTop.addEventListener('input', ()=> {
+    const v = chartNameTop.value.trim() || 'My Chart';
+    chartDisplay.textContent = v;
+});
+
+/* ---------- SAVE logic (top only) ---------- */
+function makeSavedHTML(nameForFile, chartName, ownerName) {
+    let content = `<!doctype html><html><head><meta charset="utf-8"><title>${chartName}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>body{font-family:sans-serif;background:#f4f9fe;padding:18px;} h1{color:#213;} table{border-collapse:collapse;} td,th{border:1px solid #333;width:40px;height:40px;text-align:center;} .opendigit{color:#2186cc;font-weight:bold;} .closedigit{color:#eb2323;font-weight:bold;} @media(max-width:700px){td,th{width:24px;height:24px;font-size:12px;}}</style>
+    </head><body><h1>${chartName}${ownerName?(' — '+ownerName):''}</h1><table>`;
+    for (let r=0;r<ROWS;r++){
+        content += '<tr>';
+        for (let c=0;c<COLS;c++){
+            let idx = r*COLS+c;
+            let open = openDigits[idx] ? `<span class="opendigit">${openDigits[idx]}</span>` : '';
+            let close = closeDigits[idx] ? `<span class="closedigit">${closeDigits[idx]}</span>` : '';
+            content += `<td>${open}${close}</td>`;
+        }
+        content += '</tr>';
+    }
+    content += '</table></body></html>';
+    return content;
+}
+
+function downloadSavedFile(filename, chartName, ownerName) {
+    const content = makeSavedHTML(filename, chartName || 'Saved Grid', ownerName || '');
+    const blob = new Blob([content], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const fn = (filename && filename.trim()) ? filename.trim() : 'store.html';
+    a.download = fn.endsWith('.html') ? fn : (fn + '.html');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+}
+
+/* top save button uses top inputs */
+document.getElementById('topSaveBtn').onclick = function(){
+    const filename = document.getElementById('saveFilenameTop').value.trim() || 'store.html';
+    const chartName = document.getElementById('chartNameTop').value.trim() || 'My Chart';
+    downloadSavedFile(filename, chartName, '');
+    // small visual feedback
+    this.textContent = 'Saved ✓';
+    setTimeout(()=>{ this.textContent = 'Save (Top)'; }, 1400);
 };
 </script>
 </body>
