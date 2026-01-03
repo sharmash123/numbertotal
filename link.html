@@ -1,271 +1,230 @@
 
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Grid Editor</title>
+    <title>Pattern Finder: Single Digit Sum</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Arial', sans-serif; }
-        .table-container { overflow-x: hidden; margin: 0 auto; max-width: 100%; }
-        table { border-collapse: collapse; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; table-layout: fixed; }
-        td, th { border: 2px solid #000; text-align: center; font-size: 24px; background-color: #ffffff; position: relative; vertical-align: middle; padding: 8px; border-radius: 4px; overflow: hidden; }
-        th.row-number { width: 60px; height: 80px; font-size: 18px; background-color: #f3f4f6; }
-        th.col-header { height: 40px; font-size: 16px; background-color: #f3f4f6; }
-        th.empty-corner { width: 60px; height: 40px; border: none; background-color: transparent; }
-        input.cell-input { width: 100%; height: 100%; font-size: 24px; text-align: center; border: none; outline: none; background: transparent; font-weight: bold; }
-        .number-value { font-size: 28px; font-weight: bold; display: block; line-height: 1.2; }
-        .symbol { color: red; font-weight: bold; font-size: 32px; }
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin: 1rem 0; }
-        .controls input { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100px; }
-        .controls button { padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .controls button:hover { background: #0056b3; }
-        @media (max-width: 768px) {
-            td, th.col-header { height: 60px; font-size: 18px; padding: 4px; }
-            th.row-number { width: 40px; height: 60px; font-size: 14px; }
-            .number-value { font-size: 20px; }
-            .symbol { font-size: 24px; }
-            input.cell-input { font-size: 20px; }
-            .controls { gap: 0.5rem; }
-            .controls input { width: 80px; }
-            th.row-number, th.empty-corner { width: 10%; }
-            th.col-header, td { width: calc(90% / 7); }
-        }
-        @media (max-width: 480px) {
-            td, th.col-header { height: 50px; font-size: 14px; padding: 1px; }
-            th.row-number { height: 50px; font-size: 10px; padding: 1px; }
-            .number-value { font-size: 14px; }
-            .symbol { font-size: 16px; }
-            input.cell-input { font-size: 14px; }
-            .controls { gap: 0.25rem; flex-direction: column; align-items: center; }
-            .controls input { width: 60px; }
-            .controls button { width: 100%; max-width: 120px; }
-            th.row-number, th.empty-corner { width: 8%; }
-            th.col-header, td { width: calc(92% / 7); }
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f1f5f9; }
+        .match-card { border-left: 6px solid #2563eb; background: white; padding: 16px; margin-bottom: 12px; border-radius: 12px; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .highlight { color: #2563eb; font-weight: 800; }
+        .table-container { overflow: auto; background: white; border-radius: 12px; border: 2px solid #e2e8f0; position: relative; }
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        td, th { border: 1px solid #cbd5e1; text-align: center; height: 60px; font-size: 1.1rem; }
+        th { background-color: #f8fafc; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
+        #drawingCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
     </style>
 </head>
-<body class="bg-gray-100 p-4">
-    <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-wrap mb-4">
-        <h1 class="text-xl md:text-2xl font-bold mb-2 md:mb-0">Number Grid Editor</h1>
-        <nav class="flex gap-4">
-            <a href="index.html" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300">
-                Charts
-            </a>
-            <a href="store.html" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors duration-300">
-                Store
-            </a>
+<body class="pb-20">
+    <header class="bg-blue-900 text-white p-6 shadow-lg flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Number-Cal <span class="text-blue-300">Analyzer</span></h1>
+        <nav class="space-x-6">
+            <a href="index.html" class="hover:text-blue-200 transition">Editor</a>
+            <a href="store.html" class="hover:text-blue-200 transition">Store</a>
         </nav>
     </header>
-    <div class="controls">
-        <input type="number" id="rowsInput" value="100" min="1" max="1000" placeholder="Rows">
-        <input type="number" id="colsInput" value="7" min="1" max="20" placeholder="Cols">
-        <button id="modifyBtn">Modify Grid</button>
-        <button id="clearBtn">Clear Grid</button>
-        <button id="saveBtn">Save Chart</button>
-    </div>
-    <div class="table-container">
-        <table id="gridTable">
-            <thead>
-                <tr>
-                    <th class="empty-corner"></th>
-                    <th class="col-header">Col 1</th>
-                    <th class="col-header">Col 2</th>
-                    <th class="col-header">Col 3</th>
-                    <th class="col-header">Col 4</th>
-                    <th class="col-header">Col 5</th>
-                    <th class="col-header">Col 6</th>
-                    <th class="col-header">Col 7</th>
-                </tr>
-            </thead>
-            <tbody id="gridBody">
-                <!-- Rows will be generated here -->
-            </tbody>
-        </table>
-    </div>
-
+    <main class="container mx-auto px-4 mt-8">
+        <div class="bg-white p-8 rounded-3xl shadow-xl mb-10 border border-blue-100">
+            <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="bg-blue-600 text-white p-1 rounded">🎯</span> Diagonal Open-Sum Pattern
+            </h2>
+         
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Select Chart</label>
+                    <select id="chartSelector" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
+                        <option value="">-- Choose a Chart --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Diagonal Logic</label>
+                    <select id="logicType" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
+                        <option value="open">Sum of Open (1st Digit)</option>
+                        <option value="close">Sum of Close (2nd Digit)</option>
+                        <option value="both">Combined Open & Close</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Row Range</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="startRow" value="1" class="w-1/2 border-2 border-slate-200 rounded-xl p-3">
+                        <input type="number" id="endRow" value="500" class="w-1/2 border-2 border-slate-200 rounded-xl p-3">
+                    </div>
+                </div>
+                <div class="flex items-end">
+                    <button id="runSearch" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
+                        FIND MATCHES
+                    </button>
+                </div>
+            </div>
+            <div id="resultsBox" class="mt-8 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 max-h-80 overflow-y-auto">
+                <p class="text-slate-400 italic text-center py-4">Matches will be listed here...</p>
+            </div>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700" id="currentTitle">No Chart Loaded</h3>
+            <button onclick="clearMarks()" class="text-xs bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Clear Marks</button>
+        </div>
+     
+        <div class="table-container">
+            <canvas id="drawingCanvas"></canvas>
+            <table id="displayGrid"></table>
+        </div>
+    </main>
     <script>
-        let rows = 100;
-        let cols = 7;
-        let gridData = Array.from({ length: rows }, () => Array(cols).fill(''));
-        let isAdvancing = false;
-        let currentChartName = null;
-
-        function renderGrid() {
-            const tbody = document.getElementById('gridBody');
-            tbody.innerHTML = '';
-            for (let r = 0; r < rows; r++) {
-                const tr = document.createElement('tr');
-                // Row number
-                const rowTh = document.createElement('th');
-                rowTh.className = 'row-number';
-                rowTh.textContent = r + 1;
-                tr.appendChild(rowTh);
-                for (let c = 0; c < cols; c++) {
-                    const td = document.createElement('td');
-                    td.dataset.row = r;
-                    td.dataset.col = c;
-                    renderCell(td, r, c);
-                    tr.appendChild(td);
-                }
-                tbody.appendChild(tr);
-            }
-            attachCellListeners();
-        }
-
-        function renderCell(td, r, c) {
-            const value = gridData[r][c];
-            td.innerHTML = '';
-            if (value === '**') {
-                td.innerHTML = '<span class="symbol">**</span>';
-            } else if (/^\d{2}$/.test(value)) {
-                td.innerHTML = `<span class="number-value">${value}</span>`;
-            } else {
-                td.innerHTML = '';
-            }
-        }
-
-        function attachCellListeners() {
-            const cells = document.querySelectorAll('#gridTable td');
-            cells.forEach(td => {
-                td.addEventListener('click', function() {
-                    if (isAdvancing) return;
-                    const r = parseInt(this.dataset.row);
-                    const c = parseInt(this.dataset.col);
-                    editCell(this, r, c);
-                });
+        let gridData = [];
+        let rows = 0, cols = 0;
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#8b5cf6', '#ec4899'];
+     
+        const getOpen = (v) => (v && v.length === 2) ? parseInt(v[0]) : null;
+        const getClose = (v) => (v && v.length === 2) ? parseInt(v[1]) : null;
+        const getTotal = (v) => (v && v.length === 2) ? (parseInt(v[0]) + parseInt(v[1])) % 10 : null;
+        function initCharts() {
+            const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
+            const select = document.getElementById('chartSelector');
+            Object.keys(history).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                select.appendChild(opt);
             });
         }
-
-        function editCell(td, r, c) {
-            if (isAdvancing) return;
-            isAdvancing = true;
-            td.innerHTML = '';
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'cell-input';
-            input.maxLength = 2;
-            input.value = gridData[r][c] || '';
-            input.pattern = '[0-9]{2}|\\*\\*';
-            td.appendChild(input);
-            input.focus();
-            input.select();
-
-            const handleInput = (e) => {
-                const val = e.target.value;
-                // Restrict to numbers and *
-                e.target.value = val.replace(/[^0-9*]/g, '');
-                if (val.length === 2 && (val === '**' || /^\d{2}$/.test(val))) {
-                    input.removeEventListener('input', handleInput);
-                    saveAndAdvance(r, c, td, input);
-                }
-            };
-
-            const handleKeydown = (e) => {
-                if (e.key === 'Enter') {
-                    input.removeEventListener('input', handleInput);
-                    saveAndAdvance(r, c, td, input);
-                } else if (e.key === 'Escape') {
-                    input.removeEventListener('input', handleInput);
-                    renderCell(td, r, c);
-                    isAdvancing = false;
-                }
-            };
-
-            const handleBlur = () => {
-                input.removeEventListener('input', handleInput);
-                saveAndAdvance(r, c, td, input);
-            };
-
-            input.addEventListener('input', handleInput);
-            input.addEventListener('keydown', handleKeydown);
-            input.addEventListener('blur', handleBlur);
-
-            // Reset flag after short delay
-            setTimeout(() => { isAdvancing = false; }, 100);
-        }
-
-        function saveAndAdvance(r, c, td, input) {
-            const val = input.value.trim();
-            if (val === '**' || /^\d{2}$/.test(val)) {
-                gridData[r][c] = val;
-            } else {
-                gridData[r][c] = '';
-            }
-            renderCell(td, r, c);
-            // Advance to next cell
-            let nextR = r;
-            let nextC = c + 1;
-            if (nextC >= cols) {
-                nextC = 0;
-                nextR++;
-            }
-            if (nextR < rows) {
-                setTimeout(() => {
-                    const nextTd = document.querySelector(`td[data-row="${nextR}"][data-col="${nextC}"]`);
-                    if (nextTd) {
-                        editCell(nextTd, nextR, nextC);
-                    } else {
-                        isAdvancing = false;
-                    }
-                }, 50);
-            } else {
-                isAdvancing = false;
-            }
-        }
-
-        function saveChart() {
-            if (!currentChartName) {
-                currentChartName = prompt('Enter Chart Name:');
-                if (!currentChartName || currentChartName.trim() === '') {
-                    alert('Chart name is required.');
-                    return;
-                }
-                currentChartName = currentChartName.trim();
-            }
+        document.getElementById('chartSelector').onchange = (e) => {
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
-            history[currentChartName] = {
-                rows: rows,
-                cols: cols,
-                data: JSON.parse(JSON.stringify(gridData))
-            };
-            localStorage.setItem('chartHistory', JSON.stringify(history));
-            alert(`Chart "${currentChartName}" saved successfully!`);
+            const chart = history[e.target.value];
+            if (chart) {
+                gridData = chart.data; rows = chart.rows; cols = chart.cols;
+                document.getElementById('currentTitle').innerText = `Viewing: ${e.target.value}`;
+                renderGrid();
+            }
+        };
+        function renderGrid() {
+            const table = document.getElementById('displayGrid');
+            table.innerHTML = '';
+            for(let r=0; r<rows; r++) {
+                const tr = document.createElement('tr');
+                for(let c=0; c<cols; c++) {
+                    const td = document.createElement('td');
+                    td.id = `cell-${r}-${c}`;
+                    let cell = gridData[r][c];
+                    td.innerText = (cell && typeof cell === 'object') ? cell.val : (cell || '');
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+            setTimeout(() => {
+                canvas.width = table.offsetWidth;
+                canvas.height = table.offsetHeight;
+            }, 100);
         }
-
-        document.getElementById('modifyBtn').addEventListener('click', () => {
-            const newRows = parseInt(document.getElementById('rowsInput').value) || rows;
-            const newCols = parseInt(document.getElementById('colsInput').value) || cols;
-            if (newRows < 1 || newCols < 1) return;
-            rows = newRows;
-            cols = newCols;
-            // Update headers
-            const headerRow = document.querySelector('#gridTable thead tr');
-            // Remove extra headers
-            while (headerRow.children.length > cols + 1) { // +1 for empty corner
-                headerRow.removeChild(headerRow.lastChild);
+        document.getElementById('runSearch').onclick = () => {
+            clearMarks();
+            const box = document.getElementById('resultsBox');
+            const type = document.getElementById('logicType').value;
+            const start = parseInt(document.getElementById('startRow').value) - 1;
+            const end = parseInt(document.getElementById('endRow').value) - 1;
+            let matchCounter = 0;
+            box.innerHTML = '';
+            const typesToSearch = type === 'both' ? ['open', 'close'] : [type];
+            for (let t of typesToSearch) {
+                for(let r = start; r <= end - 2; r++) {
+                    for(let c = 0; c < cols; c++) {
+                        if(c + 2 < cols) matchCounter += findPattern(r, c, 1, 1, t, box, matchCounter);
+                        if(c - 2 >= 0) matchCounter += findPattern(r, c, 1, -1, t, box, matchCounter);
+                    }
+                }
             }
-            // Add missing headers
-            for (let i = headerRow.children.length - 1; i < cols; i++) {
-                const th = document.createElement('th');
-                th.className = 'col-header';
-                th.textContent = `Col ${i + 1}`;
-                headerRow.appendChild(th);
+           
+            if(box.innerHTML === '') box.innerHTML = '<p class="text-center text-slate-400">No patterns found.</p>';
+        };
+        function findPattern(r, c, dr, dc, type, box, currentCounter) {
+            const pos = [[r,c], [r+dr, c+dc], [r+2*dr, c+2*dc]];
+            const vals = pos.map(p => {
+                let cell = gridData[p[0]][p[1]];
+                return (cell && typeof cell === 'object') ? cell.val : cell;
+            });
+            if (vals.every(v => v && /^\d{2}$/.test(v))) {
+                const getDigit = type === 'open' ? getOpen : getClose;
+                const digits = vals.map(v => getDigit(v));
+                const sum = digits.reduce((a, b) => a + b, 0) % 10;
+                let matchOffset = 0;
+                pos.forEach((p) => {
+                    [p[1]-1, p[1]+1].forEach(sideCol => {
+                        if (sideCol >= 0 && sideCol < cols) {
+                            let sideCell = gridData[p[0]][sideCol];
+                            let sideVal = (sideCell && typeof sideCell === 'object') ? sideCell.val : sideCell;
+                         
+                            if (getTotal(sideVal) === sum) {
+                                const color = colors[(currentCounter + matchOffset) % colors.length];
+                                drawVisuals(pos, [p[0], sideCol], color);
+                                const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+                                box.innerHTML += `
+                                    <div class="match-card" style="border-left-color: ${color};">
+                                        <div class="flex justify-between text-xs font-bold mb-2">
+                                            <span style="color: ${color};">${typeLabel} Sum: ${sum}</span>
+                                            <span class="text-slate-400">Row ${p[0]+1}</span>
+                                        </div>
+                                        Diagonal [${vals.join(', ')}] has ${type} sum <span class="highlight" style="color: ${color};">${sum}</span>.
+                                        Beside cell <span class="highlight" style="color: ${color};">${sideVal}</span> (Col ${sideCol+1}) has Total ${sum}.
+                                    </div>`;
+                                matchOffset++;
+                            }
+                        }
+                    });
+                });
+                return matchOffset;
             }
-            gridData = Array.from({ length: rows }, () => Array(cols).fill(''));
-            renderGrid();
-        });
-
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            gridData = Array.from({ length: rows }, () => Array(cols).fill(''));
-            renderGrid();
-        });
-
-        document.getElementById('saveBtn').addEventListener('click', saveChart);
-
-        // Initial render
-        renderGrid();
+            return 0;
+        }
+        function drawVisuals(diagonalCoords, targetCoord, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            let centers = [];
+            diagonalCoords.forEach(p => {
+                const el = document.getElementById(`cell-${p[0]}-${p[1]}`);
+                if (el) {
+                    ctx.strokeRect(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight);
+                    centers.push({
+                        x: el.offsetLeft + el.offsetWidth / 2,
+                        y: el.offsetTop + el.offsetHeight / 2
+                    });
+                }
+            });
+            if (centers.length === 3) {
+                ctx.beginPath();
+                ctx.moveTo(centers[0].x, centers[0].y);
+                ctx.lineTo(centers[1].x, centers[1].y);
+                ctx.lineTo(centers[2].x, centers[2].y);
+                ctx.stroke();
+            }
+            const targetEl = document.getElementById(`cell-${targetCoord[0]}-${targetCoord[1]}`);
+            if (targetEl) {
+                const centerX = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+                const centerY = targetEl.offsetTop + targetEl.offsetHeight / 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+                ctx.stroke();
+                const matchingIdx = diagonalCoords.findIndex(coord => coord[0] === targetCoord[0]);
+                if (matchingIdx !== -1 && centers[matchingIdx]) {
+                    const matchCenter = centers[matchingIdx];
+                    ctx.beginPath();
+                    ctx.setLineDash([5, 5]);
+                    ctx.moveTo(matchCenter.x, matchCenter.y);
+                    ctx.lineTo(centerX, centerY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+        function clearMarks() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        initCharts();
     </script>
 </body>
 </html>
