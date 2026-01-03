@@ -8,18 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
-        .match-card { 
-            border-left: 6px solid #2563eb; 
-            background: white; 
-            padding: 16px; 
-            margin-bottom: 12px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); 
+        .match-card {
+            border-left: 6px solid #2563eb;
+            background: white;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeIn 0.4s ease-out;
         }
-        .match-card:hover { 
-            transform: translateY(-2px) scale(1.02); 
+        .match-card:hover {
+            transform: translateY(-2px) scale(1.02);
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
         }
         @keyframes fadeIn {
@@ -27,12 +27,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .highlight { font-weight: 800; }
-        .table-container { 
-            overflow: auto; 
-            background: white; 
-            border-radius: 12px; 
-            border: 2px solid #e2e8f0; 
-            position: relative; 
+        .table-container {
+            overflow: auto;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            position: relative;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 #f8fafc;
         }
@@ -51,32 +51,33 @@
             background: #94a3b8;
         }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        td, th { 
-            border: 1px solid #cbd5e1; 
-            text-align: center; 
-            padding: 4px; 
+        td, th {
+            border: 1px solid #cbd5e1;
+            text-align: center;
+            padding: 4px;
             transition: background-color 0.2s ease;
+            font-weight: 600;
         }
         td:hover { background-color: #f1f5f9; }
-        th { 
-            background: linear-gradient(to bottom, #f8fafc, #e2e8f0); 
-            color: #64748b; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
+        th {
+            background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+            color: #64748b;
+            font-size: 0.75rem;
+            text-transform: uppercase;
             font-weight: 600;
         }
         @media (min-width: 768px) {
-            td, th { height: 60px; font-size: 1.1rem; padding: 8px; }
+            td, th { height: 60px; font-size: 1.2rem; padding: 8px; }
             th { font-size: 0.8rem; }
         }
         @media (max-width: 767px) {
-            td, th { height: 45px; font-size: 0.9rem; padding: 2px; }
-            th { font-size: 0.7rem; }
+            td, th { height: 50px; font-size: 1rem; padding: 4px; }
+            th { font-size: 0.75rem; }
             .table-container { border-radius: 8px; }
         }
         @media (max-width: 480px) {
-            td, th { height: 40px; font-size: 0.8rem; padding: 1px; }
-            th { font-size: 0.65rem; }
+            td, th { height: 45px; font-size: 0.9rem; padding: 2px; }
+            th { font-size: 0.7rem; }
         }
         #drawingCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
         #runSearch {
@@ -120,7 +121,7 @@
             <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-1 rounded-lg shadow-md">🎯</span> Multi-Target Pattern Finder
             </h2>
-         
+        
             <div class="grid-inputs grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-2">Select Chart</label>
@@ -149,13 +150,20 @@
                     </button>
                 </div>
             </div>
-           
+          
             <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-2">Row Range</label>
                     <div class="flex gap-2">
                         <input type="number" id="startRow" value="1" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
                         <input type="number" id="endRow" value="500" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Column Range</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="startCol" value="1" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
+                        <input type="number" id="endCol" value="100" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
                     </div>
                 </div>
             </div>
@@ -167,7 +175,7 @@
             <h3 class="text-lg font-bold text-slate-700" id="currentTitle">No Chart Loaded</h3>
             <button onclick="clearMarks()" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition-all duration-200 transform hover:scale-105">Clear Marks</button>
         </div>
-     
+    
         <div class="table-container">
             <canvas id="drawingCanvas"></canvas>
             <table id="displayGrid"></table>
@@ -180,7 +188,7 @@
         const ctx = canvas.getContext('2d');
         // Extended color list for more variation
         const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#10b981'];
-     
+    
         const getOpen = (v) => (v && v.length === 2) ? parseInt(v[0]) : null;
         const getClose = (v) => (v && v.length === 2) ? parseInt(v[1]) : null;
         const getTotal = (v) => (v && v.length === 2) ? (parseInt(v[0]) + parseInt(v[1])) % 10 : null;
@@ -233,13 +241,15 @@
             const box = document.getElementById('resultsBox');
             const logic = document.getElementById('logicType').value;
             const target = document.getElementById('targetType').value;
-            const start = parseInt(document.getElementById('startRow').value) - 1;
-            const end = parseInt(document.getElementById('endRow').value) - 1;
+            const startRow = parseInt(document.getElementById('startRow').value) - 1;
+            const endRow = parseInt(document.getElementById('endRow').value) - 1;
+            const startCol = parseInt(document.getElementById('startCol').value) - 1;
+            const endCol = parseInt(document.getElementById('endCol').value) - 1;
             let matchCounter = 0;
             box.innerHTML = '';
             box.classList.remove('has-matches');
-            for(let r = start; r <= end - 2; r++) {
-                for(let c = 0; c < cols; c++) {
+            for(let r = startRow; r <= endRow - 2; r++) {
+                for(let c = startCol; c <= endCol; c++) {
                     if(c + 2 < cols) matchCounter += findPattern(r, c, 1, 1, logic, target, box, matchCounter);
                     if(c - 2 >= 0) matchCounter += findPattern(r, c, 1, -1, logic, target, box, matchCounter);
                 }
@@ -265,7 +275,7 @@
                         if (sideCol >= 0 && sideCol < cols) {
                             let sideCell = gridData[p[0]][sideCol];
                             let sideVal = (sideCell && typeof sideCell === 'object') ? sideCell.val : sideCell;
-                           
+                          
                             // Target Logic Selection
                             let targetValue;
                             if(target === 'total') targetValue = getTotal(sideVal);
@@ -274,7 +284,7 @@
                             if (targetValue === sum) {
                                 const color = colors[(currentCounter + matchOffset) % colors.length];
                                 drawVisuals(pos, [p[0], sideCol], color);
-                               
+                              
                                 box.innerHTML += `
                                     <div class="match-card" style="border-left-color: ${color};">
                                         <div class="flex justify-between text-xs font-bold mb-2">
@@ -294,7 +304,7 @@
         }
         function drawVisuals(diagonalCoords, targetCoord, color) {
             ctx.strokeStyle = color;
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 2; // Thinner lines to not obscure numbers
             let centers = [];
             diagonalCoords.forEach(p => {
                 const el = document.getElementById(`cell-${p[0]}-${p[1]}`);
@@ -315,16 +325,18 @@
                 const centerX = targetEl.offsetLeft + targetEl.offsetWidth / 2;
                 const centerY = targetEl.offsetTop + targetEl.offsetHeight / 2;
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, 18, 0, Math.PI * 2);
+                ctx.arc(centerX, centerY, 20, 0, Math.PI * 2); // Smaller circle to not obscure
                 ctx.stroke();
                 const matchingIdx = diagonalCoords.findIndex(coord => coord[0] === targetCoord[0]);
                 if (matchingIdx !== -1 && centers[matchingIdx]) {
                     ctx.beginPath();
                     ctx.setLineDash([4, 4]);
+                    ctx.lineWidth = 1.5; // Thinner dashed line
                     ctx.moveTo(centers[matchingIdx].x, centers[matchingIdx].y);
                     ctx.lineTo(centerX, centerY);
                     ctx.stroke();
                     ctx.setLineDash([]);
+                    ctx.lineWidth = 2; // Reset
                 }
             }
         }
