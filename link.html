@@ -1,17 +1,15 @@
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pattern Finder: Single Digit Sum</title>
+    <title>Pattern Finder: Custom Target Logic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f1f5f9; }
         .match-card { border-left: 6px solid #2563eb; background: white; padding: 16px; margin-bottom: 12px; border-radius: 12px; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .highlight { color: #2563eb; font-weight: 800; }
+        .highlight { font-weight: 800; }
         .table-container { overflow: auto; background: white; border-radius: 12px; border: 2px solid #e2e8f0; position: relative; }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; }
         td, th { border: 1px solid #cbd5e1; text-align: center; height: 60px; font-size: 1.1rem; }
@@ -30,7 +28,7 @@
     <main class="container mx-auto px-4 mt-8">
         <div class="bg-white p-8 rounded-3xl shadow-xl mb-10 border border-blue-100">
             <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <span class="bg-blue-600 text-white p-1 rounded">🎯</span> Diagonal Open-Sum Pattern
+                <span class="bg-blue-600 text-white p-1 rounded">🎯</span> Multi-Target Pattern Finder
             </h2>
          
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -43,22 +41,33 @@
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-2">Diagonal Logic</label>
                     <select id="logicType" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
-                        <option value="open">Sum of Open (1st Digit)</option>
-                        <option value="close">Sum of Close (2nd Digit)</option>
-                        <option value="both">Combined Open & Close</option>
+                        <option value="open">Diagonal Open Sum</option>
+                        <option value="close">Diagonal Close Sum</option>
+                        <option value="both">Diagonal Open & Close Sum</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Row Range</label>
-                    <div class="flex gap-2">
-                        <input type="number" id="startRow" value="1" class="w-1/2 border-2 border-slate-200 rounded-xl p-3">
-                        <input type="number" id="endRow" value="500" class="w-1/2 border-2 border-slate-200 rounded-xl p-3">
-                    </div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Beside Target Logic</label>
+                    <select id="targetType" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
+                        <option value="total">Matches Beside Total</option>
+                        <option value="open">Matches Beside Open (1st Digit)</option>
+                        <option value="close">Matches Beside Close (2nd Digit)</option>
+                    </select>
                 </div>
                 <div class="flex items-end">
                     <button id="runSearch" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
                         FIND MATCHES
                     </button>
+                </div>
+            </div>
+           
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Row Range</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="startRow" value="1" class="w-full border-2 border-slate-200 rounded-xl p-3">
+                        <input type="number" id="endRow" value="500" class="w-full border-2 border-slate-200 rounded-xl p-3">
+                    </div>
                 </div>
             </div>
             <div id="resultsBox" class="mt-8 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 max-h-80 overflow-y-auto">
@@ -80,7 +89,8 @@
         let rows = 0, cols = 0;
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
-        const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#8b5cf6', '#ec4899'];
+        // Extended color list for more variation
+        const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#10b981'];
      
         const getOpen = (v) => (v && v.length === 2) ? parseInt(v[0]) : null;
         const getClose = (v) => (v && v.length === 2) ? parseInt(v[1]) : null;
@@ -125,52 +135,56 @@
         document.getElementById('runSearch').onclick = () => {
             clearMarks();
             const box = document.getElementById('resultsBox');
-            const type = document.getElementById('logicType').value;
+            const logic = document.getElementById('logicType').value;
+            const target = document.getElementById('targetType').value;
             const start = parseInt(document.getElementById('startRow').value) - 1;
             const end = parseInt(document.getElementById('endRow').value) - 1;
             let matchCounter = 0;
             box.innerHTML = '';
-            const typesToSearch = type === 'both' ? ['open', 'close'] : [type];
+            const typesToSearch = logic === 'both' ? ['open', 'close'] : [logic];
             for (let t of typesToSearch) {
                 for(let r = start; r <= end - 2; r++) {
                     for(let c = 0; c < cols; c++) {
-                        if(c + 2 < cols) matchCounter += findPattern(r, c, 1, 1, t, box, matchCounter);
-                        if(c - 2 >= 0) matchCounter += findPattern(r, c, 1, -1, t, box, matchCounter);
+                        if(c + 2 < cols) matchCounter += findPattern(r, c, 1, 1, t, target, box, matchCounter);
+                        if(c - 2 >= 0) matchCounter += findPattern(r, c, 1, -1, t, target, box, matchCounter);
                     }
                 }
             }
            
             if(box.innerHTML === '') box.innerHTML = '<p class="text-center text-slate-400">No patterns found.</p>';
         };
-        function findPattern(r, c, dr, dc, type, box, currentCounter) {
+        function findPattern(r, c, dr, dc, logic, target, box, currentCounter) {
             const pos = [[r,c], [r+dr, c+dc], [r+2*dr, c+2*dc]];
             const vals = pos.map(p => {
                 let cell = gridData[p[0]][p[1]];
                 return (cell && typeof cell === 'object') ? cell.val : cell;
             });
             if (vals.every(v => v && /^\d{2}$/.test(v))) {
-                const getDigit = type === 'open' ? getOpen : getClose;
-                const digits = vals.map(v => getDigit(v));
-                const sum = digits.reduce((a, b) => a + b, 0) % 10;
+                const diagDigit = logic === 'open' ? getOpen : getClose;
+                const sum = vals.map(v => diagDigit(v)).reduce((a, b) => a + b, 0) % 10;
                 let matchOffset = 0;
                 pos.forEach((p) => {
                     [p[1]-1, p[1]+1].forEach(sideCol => {
                         if (sideCol >= 0 && sideCol < cols) {
                             let sideCell = gridData[p[0]][sideCol];
                             let sideVal = (sideCell && typeof sideCell === 'object') ? sideCell.val : sideCell;
-                         
-                            if (getTotal(sideVal) === sum) {
+                           
+                            // Target Logic Selection
+                            let targetValue;
+                            if(target === 'total') targetValue = getTotal(sideVal);
+                            else if(target === 'open') targetValue = getOpen(sideVal);
+                            else targetValue = getClose(sideVal);
+                            if (targetValue === sum) {
                                 const color = colors[(currentCounter + matchOffset) % colors.length];
                                 drawVisuals(pos, [p[0], sideCol], color);
-                                const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+                               
                                 box.innerHTML += `
                                     <div class="match-card" style="border-left-color: ${color};">
                                         <div class="flex justify-between text-xs font-bold mb-2">
-                                            <span style="color: ${color};">${typeLabel} Sum: ${sum}</span>
+                                            <span style="color: ${color};">${logic.toUpperCase()} SUM: ${sum}</span>
                                             <span class="text-slate-400">Row ${p[0]+1}</span>
                                         </div>
-                                        Diagonal [${vals.join(', ')}] has ${type} sum <span class="highlight" style="color: ${color};">${sum}</span>.
-                                        Beside cell <span class="highlight" style="color: ${color};">${sideVal}</span> (Col ${sideCol+1}) has Total ${sum}.
+                                        Diagonal [${vals.join(', ')}] has ${logic} sum <span class="highlight" style="color: ${color};">${sum}</span> matches <span class="highlight" style="color: ${color};">${target.toUpperCase()}</span> of beside cell <span class="highlight" style="color: ${color};">${sideVal}</span>.
                                     </div>`;
                                 matchOffset++;
                             }
@@ -183,16 +197,13 @@
         }
         function drawVisuals(diagonalCoords, targetCoord, color) {
             ctx.strokeStyle = color;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.2;
             let centers = [];
             diagonalCoords.forEach(p => {
                 const el = document.getElementById(`cell-${p[0]}-${p[1]}`);
                 if (el) {
-                    ctx.strokeRect(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight);
-                    centers.push({
-                        x: el.offsetLeft + el.offsetWidth / 2,
-                        y: el.offsetTop + el.offsetHeight / 2
-                    });
+                    ctx.strokeRect(el.offsetLeft + 2, el.offsetTop + 2, el.offsetWidth - 4, el.offsetHeight - 4);
+                    centers.push({ x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 });
                 }
             });
             if (centers.length === 3) {
@@ -207,25 +218,21 @@
                 const centerX = targetEl.offsetLeft + targetEl.offsetWidth / 2;
                 const centerY = targetEl.offsetTop + targetEl.offsetHeight / 2;
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+                ctx.arc(centerX, centerY, 18, 0, Math.PI * 2);
                 ctx.stroke();
                 const matchingIdx = diagonalCoords.findIndex(coord => coord[0] === targetCoord[0]);
                 if (matchingIdx !== -1 && centers[matchingIdx]) {
-                    const matchCenter = centers[matchingIdx];
                     ctx.beginPath();
-                    ctx.setLineDash([5, 5]);
-                    ctx.moveTo(matchCenter.x, matchCenter.y);
+                    ctx.setLineDash([4, 4]);
+                    ctx.moveTo(centers[matchingIdx].x, centers[matchingIdx].y);
                     ctx.lineTo(centerX, centerY);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 }
             }
         }
-        function clearMarks() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        function clearMarks() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
         initCharts();
     </script>
 </body>
 </html>
-```
