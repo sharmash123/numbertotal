@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -105,6 +106,13 @@
         #resultsBox.has-matches {
             max-height: none;
         }
+        .stats-box {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body class="pb-20">
@@ -113,6 +121,11 @@
         <nav class="space-x-6 hidden md:block">
             <a href="index.html" class="hover:text-blue-200 transition-all duration-300 transform hover:scale-105">Editor</a>
             <a href="store.html" class="hover:text-blue-200 transition-all duration-300 transform hover:scale-105">Store</a>
+            <a href="seq.html" class="hover:text-blue-200 transition-all duration-300 transform hover:scale-105">Seq Finder</a>
+        </nav>
+        <!-- Mobile nav toggle if needed, but keeping simple -->
+    </header>
+
         </nav>
         <!-- Mobile nav toggle if needed, but keeping simple -->
     </header>
@@ -121,7 +134,7 @@
             <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-1 rounded-lg shadow-md">🎯</span> Multi-Target Pattern Finder
             </h2>
-        
+       
             <div class="grid-inputs grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-2">Select Chart</label>
@@ -150,7 +163,7 @@
                     </button>
                 </div>
             </div>
-          
+         
             <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-2">Row Range</label>
@@ -171,11 +184,15 @@
                 <p class="text-slate-400 italic text-center py-4">Matches will be listed here...</p>
             </div>
         </div>
+        <div id="statsSection" class="stats-box hidden">
+            <h3 class="text-lg font-bold text-slate-700 mb-2">Chart Stats</h3>
+            <p id="chartStats" class="text-sm text-slate-600"></p>
+        </div>
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-slate-700" id="currentTitle">No Chart Loaded</h3>
             <button onclick="clearMarks()" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition-all duration-200 transform hover:scale-105">Clear Marks</button>
         </div>
-    
+   
         <div class="table-container">
             <canvas id="drawingCanvas"></canvas>
             <table id="displayGrid"></table>
@@ -188,13 +205,14 @@
         const ctx = canvas.getContext('2d');
         // Extended color list for more variation
         const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#10b981'];
-    
+   
         const getOpen = (v) => (v && v.length === 2) ? parseInt(v[0]) : null;
         const getClose = (v) => (v && v.length === 2) ? parseInt(v[1]) : null;
         const getTotal = (v) => (v && v.length === 2) ? (parseInt(v[0]) + parseInt(v[1])) % 10 : null;
         function initCharts() {
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
             const select = document.getElementById('chartSelector');
+            select.innerHTML = '<option value="">-- Choose a Chart --</option>';
             Object.keys(history).forEach(name => {
                 const opt = document.createElement('option');
                 opt.value = name; opt.textContent = name;
@@ -205,11 +223,37 @@
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
             const chart = history[e.target.value];
             if (chart) {
-                gridData = chart.data; rows = chart.rows; cols = chart.cols;
+                gridData = ensureGridData(chart.data);
+                rows = chart.rows || gridData.length;
+                cols = chart.cols || (rows > 0 ? gridData[0].length : 0);
                 document.getElementById('currentTitle').innerText = `Viewing: ${e.target.value}`;
+                const stats = computeBasicStats(gridData, rows, cols);
+                const statsSection = document.getElementById('statsSection');
+                document.getElementById('chartStats').innerText = `Rows: ${rows}, Cols: ${cols}, Valid cells: ${stats.validCells}`;
+                statsSection.classList.remove('hidden');
                 renderGrid();
             }
         };
+        function ensureGridData(data) {
+            if (!Array.isArray(data) || data.length === 0) return [];
+            return data.map(row => {
+                if (!Array.isArray(row)) return [];
+                return row.map(cell => {
+                    let val = (cell && typeof cell === 'object' && cell.val !== undefined) ? cell.val : cell;
+                    val = String(val || '').trim();
+                    return /^\d{1,2}$/.test(val) ? val.padStart(2, '0') : '';
+                });
+            });
+        }
+        function computeBasicStats(grid, r, c) {
+            let valid = 0;
+            for (let i = 0; i < r; i++) {
+                for (let j = 0; j < c; j++) {
+                    if (/^\d{2}$/.test(grid[i][j])) valid++;
+                }
+            }
+            return { validCells: valid };
+        }
         function renderGrid() {
             const table = document.getElementById('displayGrid');
             table.innerHTML = '';
@@ -219,7 +263,7 @@
                     const td = document.createElement('td');
                     td.id = `cell-${r}-${c}`;
                     let cell = gridData[r][c];
-                    td.innerText = (cell && typeof cell === 'object') ? cell.val : (cell || '');
+                    td.innerText = (cell && /^\d{2}$/.test(cell)) ? cell : (cell || '');
                     tr.appendChild(td);
                 }
                 table.appendChild(tr);
@@ -241,17 +285,50 @@
             const box = document.getElementById('resultsBox');
             const logic = document.getElementById('logicType').value;
             const target = document.getElementById('targetType').value;
-            const startRow = parseInt(document.getElementById('startRow').value) - 1;
-            const endRow = parseInt(document.getElementById('endRow').value) - 1;
-            const startCol = parseInt(document.getElementById('startCol').value) - 1;
-            const endCol = parseInt(document.getElementById('endCol').value) - 1;
+            const startRow = Math.max(0, parseInt(document.getElementById('startRow').value) - 1);
+            const endRow = Math.min(rows - 3, parseInt(document.getElementById('endRow').value) - 1);
+            const startCol = Math.max(0, parseInt(document.getElementById('startCol').value) - 1);
+            const endCol = Math.min(cols - 1, parseInt(document.getElementById('endCol').value) - 1);
             let matchCounter = 0;
             box.innerHTML = '';
             box.classList.remove('has-matches');
-            for(let r = startRow; r <= endRow - 2; r++) {
+            // Pre-compute maps for performance
+            const openMap = new Array(rows);
+            const closeMap = new Array(rows);
+            const totalMap = new Array(rows);
+            for (let i = 0; i < rows; i++) {
+                openMap[i] = new Array(cols).fill(null);
+                closeMap[i] = new Array(cols).fill(null);
+                totalMap[i] = new Array(cols).fill(null);
+                for (let j = 0; j < cols; j++) {
+                    const v = gridData[i][j];
+                    if (/^\d{2}$/.test(v)) {
+                        openMap[i][j] = parseInt(v[0]);
+                        closeMap[i][j] = parseInt(v[1]);
+                        totalMap[i][j] = (parseInt(v[0]) + parseInt(v[1])) % 10;
+                    }
+                }
+            }
+            for(let r = startRow; r <= endRow; r++) {
                 for(let c = startCol; c <= endCol; c++) {
-                    if(c + 2 < cols) matchCounter += findPattern(r, c, 1, 1, logic, target, box, matchCounter);
-                    if(c - 2 >= 0) matchCounter += findPattern(r, c, 1, -1, logic, target, box, matchCounter);
+                    // Forward diagonal
+                    if (c + 2 < cols) {
+                        const matches = findPatternOptimized(r, c, 1, 1, logic, target, openMap, closeMap, totalMap, matchCounter);
+                        matches.forEach(match => {
+                            box.innerHTML += match.html;
+                            drawVisuals(match.pos, match.targetCoord, match.color);
+                        });
+                        matchCounter += matches.length;
+                    }
+                    // Backward diagonal
+                    if (c - 2 >= 0) {
+                        const matches = findPatternOptimized(r, c, 1, -1, logic, target, openMap, closeMap, totalMap, matchCounter);
+                        matches.forEach(match => {
+                            box.innerHTML += match.html;
+                            drawVisuals(match.pos, match.targetCoord, match.color);
+                        });
+                        matchCounter += matches.length;
+                    }
                 }
             }
             if(box.innerHTML === '') {
@@ -260,47 +337,42 @@
                 box.classList.add('has-matches');
             }
         };
-        function findPattern(r, c, dr, dc, logic, target, box, currentCounter) {
+        function findPatternOptimized(r, c, dr, dc, logic, target, openMap, closeMap, totalMap, currentCounter) {
             const pos = [[r,c], [r+dr, c+dc], [r+2*dr, c+2*dc]];
-            const vals = pos.map(p => {
-                let cell = gridData[p[0]][p[1]];
-                return (cell && typeof cell === 'object') ? cell.val : cell;
-            });
-            if (vals.every(v => v && /^\d{2}$/.test(v))) {
-                const diagDigit = logic === 'open' ? getOpen : getClose;
-                const sum = vals.map(v => diagDigit(v)).reduce((a, b) => a + b, 0) % 10;
-                let matchOffset = 0;
-                pos.forEach((p) => {
-                    [p[1]-1, p[1]+1].forEach(sideCol => {
-                        if (sideCol >= 0 && sideCol < cols) {
-                            let sideCell = gridData[p[0]][sideCol];
-                            let sideVal = (sideCell && typeof sideCell === 'object') ? sideCell.val : sideCell;
-                          
-                            // Target Logic Selection
-                            let targetValue;
-                            if(target === 'total') targetValue = getTotal(sideVal);
-                            else if(target === 'open') targetValue = getOpen(sideVal);
-                            else targetValue = getClose(sideVal);
-                            if (targetValue === sum) {
-                                const color = colors[(currentCounter + matchOffset) % colors.length];
-                                drawVisuals(pos, [p[0], sideCol], color);
-                              
-                                box.innerHTML += `
+            // Quick validity check
+            if (!pos.every(p => openMap[p[0]][p[1]] !== null)) return [];
+            const diagMap = logic === 'open' ? openMap : closeMap;
+            const sum = pos.reduce((a, p) => a + diagMap[p[0]][p[1]], 0) % 10;
+            const matches = [];
+            pos.forEach((p) => {
+                [p[1]-1, p[1]+1].forEach(sideCol => {
+                    if (sideCol >= 0 && sideCol < cols && totalMap[p[0]][sideCol] !== null) {
+                        let targetValue;
+                        if(target === 'total') targetValue = totalMap[p[0]][sideCol];
+                        else if(target === 'open') targetValue = openMap[p[0]][sideCol];
+                        else targetValue = closeMap[p[0]][sideCol];
+                        if (targetValue === sum) {
+                            const color = colors[(currentCounter + matches.length) % colors.length];
+                            const vals = pos.map(p => gridData[p[0]][p[1]]);
+                            const sideVal = gridData[p[0]][sideCol];
+                            matches.push({
+                                html: `
                                     <div class="match-card" style="border-left-color: ${color};">
                                         <div class="flex justify-between text-xs font-bold mb-2">
                                             <span style="color: ${color};">${logic.toUpperCase()} SUM: ${sum}</span>
                                             <span class="text-slate-400">Row ${p[0]+1}</span>
                                         </div>
                                         Diagonal [${vals.join(', ')}] matches <span class="highlight" style="color: ${color};">${target.toUpperCase()}</span> of beside cell <span class="highlight" style="color: ${color};">${sideVal}</span>.
-                                    </div>`;
-                                matchOffset++;
-                            }
+                                    </div>`,
+                                pos: pos,
+                                targetCoord: [p[0], sideCol],
+                                color: color
+                            });
                         }
-                    });
+                    }
                 });
-                return matchOffset;
-            }
-            return 0;
+            });
+            return matches;
         }
         function drawVisuals(diagonalCoords, targetCoord, color) {
             ctx.strokeStyle = color;
@@ -345,3 +417,4 @@
     </script>
 </body>
 </html>
+```
