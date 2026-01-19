@@ -1,420 +1,161 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pattern Finder: Custom Target Logic</title>
+    <title>Number-Cal: Transform & Pairs</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
-        .match-card {
-            border-left: 6px solid #2563eb;
-            background: white;
-            padding: 16px;
-            margin-bottom: 12px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeIn 0.4s ease-out;
+        body { font-family: 'Poppins', sans-serif; background: #f1f5f9; }
+        
+        .table-container { 
+            overflow: auto; 
+            background: white; 
+            border-radius: 12px; 
+            border: 2px solid #e2e8f0; 
+            max-height: 80vh;
         }
-        .match-card:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .highlight { font-weight: 800; }
-        .table-container {
-            overflow: auto;
-            background: white;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
+        
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; min-width: 600px; }
+        
+        td { 
+            border: 1px solid #cbd5e1; 
+            text-align: center; 
+            vertical-align: middle;
             position: relative;
-            scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 #f8fafc;
+            padding: 4px 0;
+            height: 60px;
         }
-        .table-container::-webkit-scrollbar {
-            height: 8px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #f8fafc;
-            border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        td, th {
-            border: 1px solid #cbd5e1;
-            text-align: center;
-            padding: 4px;
-            transition: background-color 0.2s ease;
-            font-weight: 600;
-        }
-        td:hover { background-color: #f1f5f9; }
-        th {
-            background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
-            color: #64748b;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
+
         @media (min-width: 768px) {
-            td, th { height: 60px; font-size: 1.2rem; padding: 8px; }
-            th { font-size: 0.8rem; }
+            td { height: 75px; }
         }
-        @media (max-width: 767px) {
-            td, th { height: 50px; font-size: 1rem; padding: 4px; }
-            th { font-size: 0.75rem; }
-            .table-container { border-radius: 8px; }
+
+        .original-num {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1.2;
         }
-        @media (max-width: 480px) {
-            td, th { height: 45px; font-size: 0.9rem; padding: 2px; }
-            th { font-size: 0.7rem; }
+
+        .transform-num {
+            font-size: 1.30rem;
+            font-weight: 800;
+            color: #16a34a; 
+            display: block;
+            line-height: 1.2;
+            margin-top: 2px;
         }
-        #drawingCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        #runSearch {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #runSearch:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        #runSearch:active {
-            transform: scale(0.98);
-        }
-        .grid-inputs input, .grid-inputs select {
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .grid-inputs input:focus, .grid-inputs select:focus {
-            box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
-        }
-        header {
-            background: linear-gradient(to right, #1e3a8a, #1d4ed8);
-        }
-        #resultsBox {
-            transition: max-height 0.3s ease;
-        }
-        #resultsBox.has-matches {
-            max-height: none;
-        }
-        .stats-box {
-            background: white;
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            margin-bottom: 16px;
-        }
+
+        /* Red color definition matching your index.html */
+        .text-red { color: #dc2626 !important; font-weight: 800; }
+        .text-black { color: #1e293b; }
+
+        header { background: linear-gradient(to right, #1e1b4b, #312e81); }
     </style>
 </head>
-<body class="pb-20">
-    <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white p-6 shadow-xl flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Number-Cal <span class="text-blue-300">Analyzer</span></h1>
-        <nav class="space-x-6 hidden md:block">
-            <a href="index.html" class="hover:text-blue-200 transition-all duration-300 transform hover:scale-105">Editor</a>
-            <a href="store.html" class="hover:text-blue-200 transition-all duration-300 transform hover:scale-105">Store</a>
-            <a href="seq.html" class="hover:text-blue-200 transition-all duration-300 transform hover:scale-105">Seq Finder</a>
+<body class="pb-10">
+    <header class="text-white p-4 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <h1 class="text-xl font-bold">Number-Cal <span class="text-green-400">Pair-View</span></h1>
+        <nav class="flex gap-4">
+            <a href="index.html" class="text-xs font-bold border border-white/30 px-3 py-1 rounded">Editor</a>
         </nav>
-        <!-- Mobile nav toggle if needed, but keeping simple -->
     </header>
 
-        </nav>
-        <!-- Mobile nav toggle if needed, but keeping simple -->
-    </header>
-    <main class="container mx-auto px-4 mt-8">
-        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl mb-10 border border-blue-100 transition-all duration-500 hover:shadow-3xl">
-            <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-1 rounded-lg shadow-md">🎯</span> Multi-Target Pattern Finder
-            </h2>
-       
-            <div class="grid-inputs grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Select Chart</label>
-                    <select id="chartSelector" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
-                        <option value="">-- Choose a Chart --</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Diagonal Logic</label>
-                    <select id="logicType" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
-                        <option value="open">Diagonal Open Sum</option>
-                        <option value="close">Diagonal Close Sum</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Beside Target Logic</label>
-                    <select id="targetType" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 transition">
-                        <option value="total"> Total</option>
-                        <option value="open"> Open (1st Digit)</option>
-                        <option value="close"> Close (2nd Digit)</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button id="runSearch" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
-                        FIND MATCHES
-                    </button>
-                </div>
-            </div>
-         
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Row Range</label>
-                    <div class="flex gap-2">
-                        <input type="number" id="startRow" value="1" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
-                        <input type="number" id="endRow" value="500" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Column Range</label>
-                    <div class="flex gap-2">
-                        <input type="number" id="startCol" value="1" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
-                        <input type="number" id="endCol" value="100" class="w-full border-2 border-slate-200 rounded-xl p-3 flex-1">
-                    </div>
-                </div>
-            </div>
-            <div id="resultsBox" class="mt-8 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 max-h-80 overflow-y-auto">
-                <p class="text-slate-400 italic text-center py-4">Matches will be listed here...</p>
-            </div>
+    <main class="p-2 md:p-6">
+        <div class="bg-white p-4 rounded-2xl shadow-md mb-6">
+            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Select Existing Chart</label>
+            <select id="chartSelector" class="w-full border-2 border-slate-100 rounded-lg p-2 font-bold outline-none focus:border-green-500 transition">
+                <option value="">-- Choose a Chart --</option>
+            </select>
         </div>
-        <div id="statsSection" class="stats-box hidden">
-            <h3 class="text-lg font-bold text-slate-700 mb-2">Chart Stats</h3>
-            <p id="chartStats" class="text-sm text-slate-600"></p>
-        </div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-700" id="currentTitle">No Chart Loaded</h3>
-            <button onclick="clearMarks()" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition-all duration-200 transform hover:scale-105">Clear Marks</button>
-        </div>
-   
-        <div class="table-container">
-            <canvas id="drawingCanvas"></canvas>
-            <table id="displayGrid"></table>
+
+        <div id="viewContainer" class="hidden">
+            <div class="table-container shadow-2xl">
+                <table id="displayGrid"></table>
+            </div>
         </div>
     </main>
+
     <script>
+        // 1. Red Pair Logic from your index.html
+        const redPairs = {0:5, 1:6, 2:7, 3:8, 4:9, 5:0, 6:1, 7:2, 8:3, 9:4};
+        
+        // 2. Pair Mapping for the GREEN number (as requested earlier)
+        const greenTransformMap = {
+            '1':'6', '6':'1', '2':'7', '7':'2', '3':'8', '8':'3', '4':'9', '9':'4', '5':'0', '0':'5'
+        };
+
         let gridData = [];
         let rows = 0, cols = 0;
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
-        // Extended color list for more variation
-        const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#10b981'];
-   
-        const getOpen = (v) => (v && v.length === 2) ? parseInt(v[0]) : null;
-        const getClose = (v) => (v && v.length === 2) ? parseInt(v[1]) : null;
-        const getTotal = (v) => (v && v.length === 2) ? (parseInt(v[0]) + parseInt(v[1])) % 10 : null;
-        function initCharts() {
+
+        // Function to check if number should be RED (from your index.html)
+        function checkRedStatus(num) {
+            if (!num || num.length !== 2 || !/^\d{2}$/.test(num)) return false;
+            const a = parseInt(num[0]), b = parseInt(num[1]);
+            return a === b || redPairs[a] === b;
+        }
+
+        // Logic for the small green number (Pair Transform)
+        function getGreenTransform(val) {
+            if (!val || val.length !== 2 || val === '**') return "";
+            const d1 = greenTransformMap[val[0]] || val[0];
+            const d2 = greenTransformMap[val[1]] || val[1];
+            return d1 + d2;
+        }
+
+        function init() {
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
             const select = document.getElementById('chartSelector');
-            select.innerHTML = '<option value="">-- Choose a Chart --</option>';
             Object.keys(history).forEach(name => {
                 const opt = document.createElement('option');
                 opt.value = name; opt.textContent = name;
                 select.appendChild(opt);
             });
         }
+
         document.getElementById('chartSelector').onchange = (e) => {
             const history = JSON.parse(localStorage.getItem('chartHistory')) || {};
             const chart = history[e.target.value];
             if (chart) {
-                gridData = ensureGridData(chart.data);
-                rows = chart.rows || gridData.length;
-                cols = chart.cols || (rows > 0 ? gridData[0].length : 0);
-                document.getElementById('currentTitle').innerText = `Viewing: ${e.target.value}`;
-                const stats = computeBasicStats(gridData, rows, cols);
-                const statsSection = document.getElementById('statsSection');
-                document.getElementById('chartStats').innerText = `Rows: ${rows}, Cols: ${cols}, Valid cells: ${stats.validCells}`;
-                statsSection.classList.remove('hidden');
+                gridData = chart.data; 
+                rows = chart.rows; 
+                cols = chart.cols;
+                document.getElementById('viewContainer').classList.remove('hidden');
                 renderGrid();
             }
         };
-        function ensureGridData(data) {
-            if (!Array.isArray(data) || data.length === 0) return [];
-            return data.map(row => {
-                if (!Array.isArray(row)) return [];
-                return row.map(cell => {
-                    let val = (cell && typeof cell === 'object' && cell.val !== undefined) ? cell.val : cell;
-                    val = String(val || '').trim();
-                    return /^\d{1,2}$/.test(val) ? val.padStart(2, '0') : '';
-                });
-            });
-        }
-        function computeBasicStats(grid, r, c) {
-            let valid = 0;
-            for (let i = 0; i < r; i++) {
-                for (let j = 0; j < c; j++) {
-                    if (/^\d{2}$/.test(grid[i][j])) valid++;
-                }
-            }
-            return { validCells: valid };
-        }
+
         function renderGrid() {
             const table = document.getElementById('displayGrid');
             table.innerHTML = '';
+            
             for(let r=0; r<rows; r++) {
                 const tr = document.createElement('tr');
                 for(let c=0; c<cols; c++) {
                     const td = document.createElement('td');
-                    td.id = `cell-${r}-${c}`;
-                    let cell = gridData[r][c];
-                    td.innerText = (cell && /^\d{2}$/.test(cell)) ? cell : (cell || '');
+                    const cell = gridData[r] && gridData[r][c];
+                    
+                    if (cell) {
+                        const val = (typeof cell === 'object') ? cell.val : cell;
+                        
+                        // Apply the RED condition from your index.html logic
+                        const isRedNumber = checkRedStatus(val) || (cell.val === '**');
+                        const transformed = getGreenTransform(val);
+                        
+                        td.innerHTML = `
+                            <span class="original-num ${isRedNumber ? 'text-red' : 'text-black'}">${val}</span>
+                            <span class="transform-num">${transformed}</span>
+                        `;
+                    }
                     tr.appendChild(td);
                 }
                 table.appendChild(tr);
             }
-            // Improved resize handling for better mobile responsiveness
-            const resizeObserver = new ResizeObserver(() => {
-                canvas.width = table.offsetWidth;
-                canvas.height = table.offsetHeight;
-            });
-            resizeObserver.observe(table);
-            // Fallback
-            setTimeout(() => {
-                canvas.width = table.offsetWidth;
-                canvas.height = table.offsetHeight;
-            }, 100);
         }
-        document.getElementById('runSearch').onclick = () => {
-            clearMarks();
-            const box = document.getElementById('resultsBox');
-            const logic = document.getElementById('logicType').value;
-            const target = document.getElementById('targetType').value;
-            const startRow = Math.max(0, parseInt(document.getElementById('startRow').value) - 1);
-            const endRow = Math.min(rows - 3, parseInt(document.getElementById('endRow').value) - 1);
-            const startCol = Math.max(0, parseInt(document.getElementById('startCol').value) - 1);
-            const endCol = Math.min(cols - 1, parseInt(document.getElementById('endCol').value) - 1);
-            let matchCounter = 0;
-            box.innerHTML = '';
-            box.classList.remove('has-matches');
-            // Pre-compute maps for performance
-            const openMap = new Array(rows);
-            const closeMap = new Array(rows);
-            const totalMap = new Array(rows);
-            for (let i = 0; i < rows; i++) {
-                openMap[i] = new Array(cols).fill(null);
-                closeMap[i] = new Array(cols).fill(null);
-                totalMap[i] = new Array(cols).fill(null);
-                for (let j = 0; j < cols; j++) {
-                    const v = gridData[i][j];
-                    if (/^\d{2}$/.test(v)) {
-                        openMap[i][j] = parseInt(v[0]);
-                        closeMap[i][j] = parseInt(v[1]);
-                        totalMap[i][j] = (parseInt(v[0]) + parseInt(v[1])) % 10;
-                    }
-                }
-            }
-            for(let r = startRow; r <= endRow; r++) {
-                for(let c = startCol; c <= endCol; c++) {
-                    // Forward diagonal
-                    if (c + 2 < cols) {
-                        const matches = findPatternOptimized(r, c, 1, 1, logic, target, openMap, closeMap, totalMap, matchCounter);
-                        matches.forEach(match => {
-                            box.innerHTML += match.html;
-                            drawVisuals(match.pos, match.targetCoord, match.color);
-                        });
-                        matchCounter += matches.length;
-                    }
-                    // Backward diagonal
-                    if (c - 2 >= 0) {
-                        const matches = findPatternOptimized(r, c, 1, -1, logic, target, openMap, closeMap, totalMap, matchCounter);
-                        matches.forEach(match => {
-                            box.innerHTML += match.html;
-                            drawVisuals(match.pos, match.targetCoord, match.color);
-                        });
-                        matchCounter += matches.length;
-                    }
-                }
-            }
-            if(box.innerHTML === '') {
-                box.innerHTML = '<p class="text-center text-slate-400 animate-pulse">No patterns found.</p>';
-            } else {
-                box.classList.add('has-matches');
-            }
-        };
-        function findPatternOptimized(r, c, dr, dc, logic, target, openMap, closeMap, totalMap, currentCounter) {
-            const pos = [[r,c], [r+dr, c+dc], [r+2*dr, c+2*dc]];
-            // Quick validity check
-            if (!pos.every(p => openMap[p[0]][p[1]] !== null)) return [];
-            const diagMap = logic === 'open' ? openMap : closeMap;
-            const sum = pos.reduce((a, p) => a + diagMap[p[0]][p[1]], 0) % 10;
-            const matches = [];
-            pos.forEach((p) => {
-                [p[1]-1, p[1]+1].forEach(sideCol => {
-                    if (sideCol >= 0 && sideCol < cols && totalMap[p[0]][sideCol] !== null) {
-                        let targetValue;
-                        if(target === 'total') targetValue = totalMap[p[0]][sideCol];
-                        else if(target === 'open') targetValue = openMap[p[0]][sideCol];
-                        else targetValue = closeMap[p[0]][sideCol];
-                        if (targetValue === sum) {
-                            const color = colors[(currentCounter + matches.length) % colors.length];
-                            const vals = pos.map(p => gridData[p[0]][p[1]]);
-                            const sideVal = gridData[p[0]][sideCol];
-                            matches.push({
-                                html: `
-                                    <div class="match-card" style="border-left-color: ${color};">
-                                        <div class="flex justify-between text-xs font-bold mb-2">
-                                            <span style="color: ${color};">${logic.toUpperCase()} SUM: ${sum}</span>
-                                            <span class="text-slate-400">Row ${p[0]+1}</span>
-                                        </div>
-                                        Diagonal [${vals.join(', ')}] matches <span class="highlight" style="color: ${color};">${target.toUpperCase()}</span> of beside cell <span class="highlight" style="color: ${color};">${sideVal}</span>.
-                                    </div>`,
-                                pos: pos,
-                                targetCoord: [p[0], sideCol],
-                                color: color
-                            });
-                        }
-                    }
-                });
-            });
-            return matches;
-        }
-        function drawVisuals(diagonalCoords, targetCoord, color) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2; // Thinner lines to not obscure numbers
-            let centers = [];
-            diagonalCoords.forEach(p => {
-                const el = document.getElementById(`cell-${p[0]}-${p[1]}`);
-                if (el) {
-                    ctx.strokeRect(el.offsetLeft + 2, el.offsetTop + 2, el.offsetWidth - 4, el.offsetHeight - 4);
-                    centers.push({ x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 });
-                }
-            });
-            if (centers.length === 3) {
-                ctx.beginPath();
-                ctx.moveTo(centers[0].x, centers[0].y);
-                ctx.lineTo(centers[1].x, centers[1].y);
-                ctx.lineTo(centers[2].x, centers[2].y);
-                ctx.stroke();
-            }
-            const targetEl = document.getElementById(`cell-${targetCoord[0]}-${targetCoord[1]}`);
-            if (targetEl) {
-                const centerX = targetEl.offsetLeft + targetEl.offsetWidth / 2;
-                const centerY = targetEl.offsetTop + targetEl.offsetHeight / 2;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 20, 0, Math.PI * 2); // Smaller circle to not obscure
-                ctx.stroke();
-                const matchingIdx = diagonalCoords.findIndex(coord => coord[0] === targetCoord[0]);
-                if (matchingIdx !== -1 && centers[matchingIdx]) {
-                    ctx.beginPath();
-                    ctx.setLineDash([4, 4]);
-                    ctx.lineWidth = 1.5; // Thinner dashed line
-                    ctx.moveTo(centers[matchingIdx].x, centers[matchingIdx].y);
-                    ctx.lineTo(centerX, centerY);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.lineWidth = 2; // Reset
-                }
-            }
-        }
-        function clearMarks() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-        initCharts();
+
+        init();
     </script>
 </body>
 </html>
-```
